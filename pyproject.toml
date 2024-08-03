@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dd-python"
+version = "0.0.0"
+description = ""
+authors = ["Sebastian Buczyński <nnplaya@gmail.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+pytest = "*"
+factory-boy = "*"
+tach = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
