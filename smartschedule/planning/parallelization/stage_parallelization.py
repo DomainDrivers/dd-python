@@ -12,5 +12,5 @@ from smartschedule.sorter.graph_topological_sort import GraphTopologicalSort
 class StageParallelization:
     def of(self, stages: set[Stage]) -> ParallelStagesList:
         nodes = StagesToNodes().calculate(list(stages))
-        sorted_nodes = GraphTopologicalSort().sort(nodes)
+        sorted_nodes = GraphTopologicalSort[Stage]().sort(nodes)
         return SortedNodesToParallelizedStages().calculate(sorted_nodes)

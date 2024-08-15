@@ -6,7 +6,7 @@ from smartschedule.sorter.node import Node
 
 class FeedbackArcSeOnGraph:
     @classmethod
-    def calculate(cls, initial_nodes: list[Node]) -> list[Edge]:
+    def calculate(cls, initial_nodes: list[Node[str]]) -> list[Edge]:
         adjacency_list = cls._create_adjacency_list(initial_nodes)
         v = len(adjacency_list)
         feedback_edges = []
@@ -23,7 +23,9 @@ class FeedbackArcSeOnGraph:
         return feedback_edges
 
     @classmethod
-    def _create_adjacency_list(cls, initial_nodes: list[Node]) -> dict[int, list[int]]:
+    def _create_adjacency_list(
+        cls, initial_nodes: list[Node[str]]
+    ) -> dict[int, list[int]]:
         adjacency_list: dict[int, list[int]] = {}
         for i in range(1, len(initial_nodes) + 1):
             adjacency_list[i] = []

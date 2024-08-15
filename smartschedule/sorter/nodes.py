@@ -8,25 +8,25 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Nodes:
-    nodes: set[Node]
+class Nodes[T]:
+    nodes: set[Node[T]]
 
     @property
-    def all(self) -> set[Node]:
+    def all(self) -> set[Node[T]]:
         return self.nodes.copy()
 
-    def add(self, node: Node) -> Nodes:
+    def add(self, node: Node[T]) -> Nodes[T]:
         new_nodes = self.nodes.copy()
         new_nodes.add(node)
-        return Nodes(new_nodes)
+        return Nodes[T](new_nodes)
 
-    def with_all_dependencies_present_in(self, nodes: Iterable[Node]) -> Nodes:
-        return Nodes(
+    def with_all_dependencies_present_in(self, nodes: Iterable[Node[T]]) -> Nodes[T]:
+        return Nodes[T](
             {node for node in self.nodes if node.dependencies.nodes.issubset(nodes)}
         )
 
-    def remove_all(self, nodes: set[Node]) -> Nodes:
-        return Nodes({node for node in self.nodes if node not in nodes})
+    def remove_all(self, nodes: set[Node[T]]) -> Nodes[T]:
+        return Nodes[T]({node for node in self.nodes if node not in nodes})
 
     def __str__(self) -> str:
         return f"Nodes{{node={self.nodes}}}"

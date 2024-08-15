@@ -1,18 +1,17 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 
-from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.sorter.nodes import Nodes
 
 
 @dataclass
-class Node:
+class Node[T]:
     name: str
-    content: Stage
-    dependencies: Nodes = field(default_factory=lambda: Nodes(set()))
+    content: T
+    dependencies: Nodes[T] = field(default_factory=lambda: Nodes[T](set()))
 
-    def depends_on(self, node: Node) -> Node:
-        return Node(
+    def depends_on(self, node: Node[T]) -> Node[T]:
+        return Node[T](
             name=self.name,
             content=self.content,
             dependencies=self.dependencies.add(node),

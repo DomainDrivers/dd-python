@@ -4,8 +4,8 @@ from smartschedule.sorter.nodes import Nodes
 
 
 class StagesToNodes:
-    def calculate(self, stages: list[Stage]) -> Nodes:
-        result: dict[str, Node] = {
+    def calculate(self, stages: list[Stage]) -> Nodes[Stage]:
+        result: dict[str, Node[Stage]] = {
             stage.name: Node(stage.name, stage) for stage in stages
         }
 
@@ -16,7 +16,7 @@ class StagesToNodes:
         return Nodes(set(result.values()))
 
     def _shared_resources(
-        self, stage: Stage, with_stages: list[Stage], result: dict[str, Node]
+        self, stage: Stage, with_stages: list[Stage], result: dict[str, Node[Stage]]
     ) -> None:
         for other in with_stages:
             if stage.name != other.name:
@@ -28,7 +28,9 @@ class StagesToNodes:
                         node = result[other.name].depends_on(result[stage.name])
                         result[other.name] = node
 
-    def _explicit_dependencies(self, stage: Stage, result: dict[str, Node]) -> None:
+    def _explicit_dependencies(
+        self, stage: Stage, result: dict[str, Node[Stage]]
+    ) -> None:
         node_with_explicit_deps = result[stage.name]
         for explicit_dependency in stage.dependencies:
             node_with_explicit_deps = node_with_explicit_deps.depends_on(
