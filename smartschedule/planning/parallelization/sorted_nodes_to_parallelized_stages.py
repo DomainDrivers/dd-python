@@ -6,10 +6,12 @@ from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.sorter.sorted_nodes import SortedNodes
 
 
-class SortedNodesToParallelizedStages:
-    def calculate(self, sorted_nodes: SortedNodes[Stage]) -> ParallelStagesList:
-        parallelized = [
+def sorted_nodes_to_parallelized_stages(
+    sorted_nodes: SortedNodes[Stage],
+) -> ParallelStagesList:
+    return ParallelStagesList(
+        [
             ParallelStages({node.content for node in nodes.nodes})
             for nodes in sorted_nodes.all
         ]
-        return ParallelStagesList(parallelized)
+    )

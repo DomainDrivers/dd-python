@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 python-dateutil = "*"
+returns = "*"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"
@@ -19,3 +20,6 @@ tach = "*"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+extend-exclude = ["smartschedule/planning/parallelization/stage_parallelization.py"]
