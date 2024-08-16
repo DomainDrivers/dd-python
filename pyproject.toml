@@ -15,6 +15,7 @@ ruff = "*"
 pytest = "*"
 factory-boy = "*"
 tach = "*"
+types-python-dateutil = "*"
 
 [build-system]
 requires = ["poetry-core"]

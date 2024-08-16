@@ -1,9 +1,9 @@
 import pytest
+
 from smartschedule.planning.parallelization.stage import ResourceName, Stage
 from smartschedule.planning.parallelization.stage_parallelization import (
     StageParallelization,
 )
-
 
 LEON = ResourceName("Leon")
 ERYK = ResourceName("Eryk")

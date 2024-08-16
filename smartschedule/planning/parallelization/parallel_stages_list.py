@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 
 from smartschedule.planning.parallelization.parallel_stages import ParallelStages

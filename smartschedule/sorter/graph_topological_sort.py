@@ -1,4 +1,5 @@
 from itertools import chain
+
 from smartschedule.sorter.nodes import Nodes
 from smartschedule.sorter.sorted_nodes import SortedNodes
 
