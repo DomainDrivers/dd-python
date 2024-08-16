@@ -11,5 +11,8 @@ class SimulatedProject:
     earnings: Decimal
     missing_demands: Demands
 
+    def all_demands_satisfied(self) -> bool:
+        return len(self.missing_demands.all) == 0
+
     def __hash__(self) -> int:
         return hash(self.project_id)

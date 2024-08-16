@@ -53,7 +53,6 @@ def simulation_facade() -> SimulationFacade:
     return SimulationFacade()
 
 
-@pytest.mark.xfail(reason="Not implemented yet", strict=True)
 class TestSimulationScenarios:
     def test_picks_optimal_project_based_on_earnings(
         self,
