@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from smartschedule.optimization.optimization_facade import OptimizationFacade
+from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from smartschedule.simulation.additional_priced_capability import (
     AdditionalPricedCapability,
@@ -11,7 +12,6 @@ from smartschedule.simulation.additional_priced_capability import (
 from smartschedule.simulation.available_resource_capability import (
     AvailableResourceCapability,
 )
-from smartschedule.simulation.capability import Capability
 from smartschedule.simulation.demand import Demand
 from smartschedule.simulation.demands import Demands
 from smartschedule.simulation.project_id import ProjectId
@@ -105,7 +105,7 @@ class TestSimulationScenarios:
             capabilities__1__time_slot=jan_1_time_slot,
         )
 
-        result = simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+        result = simulation_facade.what_is_the_optimal_setup(
             simulated_projects, simulated_availability
         )
 
@@ -138,7 +138,7 @@ class TestSimulationScenarios:
             capabilities__1__time_slot=jan_1_time_slot,
         )
 
-        result = simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+        result = simulation_facade.what_is_the_optimal_setup(
             simulated_projects, simulated_availability
         )
 
@@ -191,10 +191,10 @@ class TestSimulationScenarios:
             time_slot=jan_1_time_slot,
         )
 
-        result_without_extra_resource = simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+        result_without_extra_resource = simulation_facade.what_is_the_optimal_setup(
             simulated_projects, simulated_availability
         )
-        result_with_extra_resource = simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+        result_with_extra_resource = simulation_facade.what_is_the_optimal_setup(
             simulated_projects, simulated_availability.add(extra_capability)
         )
 

@@ -42,7 +42,7 @@ class SimulationFacade:
             result_with.profit - float(new_prices_capability.value)
         ) - result_without.profit
 
-    def which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+    def what_is_the_optimal_setup(
         self,
         projects_simulations: list[SimulatedProject],
         total_capability: SimulatedCapabilities,

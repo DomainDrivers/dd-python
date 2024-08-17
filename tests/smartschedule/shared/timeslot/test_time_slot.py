@@ -82,3 +82,136 @@ class TestTimeSlot:
         )
 
         assert slot1.within(slot1)
+
+    def test_slot_overlaps(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 15, tzinfo=timezone.utc),
+        )
+        slot_3 = TimeSlot(
+            from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+        slot_4 = TimeSlot(
+            from_=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+        slot_5 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+
+        assert slot_1.overlaps(slot_2)
+        assert slot_1.overlaps(slot_1)
+        assert slot_1.overlaps(slot_3)
+        assert slot_1.overlaps(slot_4)
+        assert slot_1.overlaps(slot_5)
+
+    def test_slot_not_overlaps(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 10, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+        slot_3 = TimeSlot(
+            from_=datetime(2022, 1, 11, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+
+        assert not slot_1.overlaps(slot_2)
+        assert not slot_1.overlaps(slot_3)
+
+    def test_removing_common_parts_has_no_effect_when_there_is_no_overlap(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 15, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+
+        assert slot_1.leftover_after_removing_common_with(slot_2) == [slot_1, slot_2]
+
+    def test_removing_common_parts_when_there_is_full_overlap(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+
+        assert slot_1.leftover_after_removing_common_with(slot_1) == []
+
+    def test_removing_common_parts_when_there_is_some_overlap(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 15, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+
+        difference = slot_1.leftover_after_removing_common_with(slot_2)
+
+        assert difference == [
+            TimeSlot(
+                from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            ),
+            TimeSlot(
+                from_=datetime(2022, 1, 15, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+            ),
+        ]
+
+        slot_3 = TimeSlot(
+            from_=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+        slot_4 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+        )
+
+        difference2 = slot_3.leftover_after_removing_common_with(slot_4)
+
+        assert difference2 == [
+            TimeSlot(
+                from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            ),
+            TimeSlot(
+                from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+            ),
+        ]
+
+    def test_removing_common_parts_when_one_slot_is_fully_within_another(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 15, tzinfo=timezone.utc),
+        )
+
+        difference = slot_1.leftover_after_removing_common_with(slot_2)
+
+        assert difference == [
+            TimeSlot(
+                from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            ),
+            TimeSlot(
+                from_=datetime(2022, 1, 15, tzinfo=timezone.utc),
+                to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+            ),
+        ]

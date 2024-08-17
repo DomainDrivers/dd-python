@@ -1,5 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/gauge-sh/tach/v0.9.2/public/tach-yml-schema.json
 modules:
+  - path: smartschedule.allocation
+    depends_on:
+      - path: smartschedule.simulation
+      - path: smartschedule.shared
   - path: smartschedule.optimization
     depends_on:
       - path: smartschedule.shared

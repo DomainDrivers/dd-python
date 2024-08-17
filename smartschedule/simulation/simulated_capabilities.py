@@ -11,6 +11,10 @@ from smartschedule.simulation.available_resource_capability import (
 class SimulatedCapabilities:
     capabilities: list[AvailableResourceCapability]
 
+    @staticmethod
+    def none() -> SimulatedCapabilities:
+        return SimulatedCapabilities([])
+
     def add(
         self, *new_capabilities: AvailableResourceCapability
     ) -> SimulatedCapabilities:
