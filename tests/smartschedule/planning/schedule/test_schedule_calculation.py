@@ -87,7 +87,6 @@ def jan_3_6() -> TimeSlot:
 
 
 class TestScheduleCalculation:
-    @pytest.mark.xfail(reason="Not implemented yet", strict=True)
     def test_calculate_schedule_based_on_the_start_day(
         self, jan_1: date, jan_1_4: TimeSlot, jan_4_14: TimeSlot, jan_14_16: TimeSlot
     ) -> None:

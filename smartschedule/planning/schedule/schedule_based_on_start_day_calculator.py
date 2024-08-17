@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Callable
 
 from smartschedule.planning.parallelization.parallel_stages import ParallelStages
@@ -17,7 +17,14 @@ class ScheduleBasedOnStartDayCalculator:
         sort_key_getter: Callable[[ParallelStages], Comparable],
     ) -> dict[str, TimeSlot]:
         schedule_dict: dict[str, TimeSlot] = {}
-        current_start = start_date  # noqa
-        all_sorted = parallelized_stages.all_sorted(sort_key_getter=sort_key_getter)  # noqa
-        # TODO
+        current_start = datetime.combine(start_date, datetime.min.time())
+        all_sorted = parallelized_stages.all_sorted(sort_key_getter=sort_key_getter)
+        for stages in all_sorted:
+            parallelized_stages_end = current_start
+            for stage in stages.stages:
+                stage_end = current_start + stage.duration
+                schedule_dict[stage.name] = TimeSlot(current_start, stage_end)
+                if stage_end > parallelized_stages_end:
+                    parallelized_stages_end = stage_end
+            current_start = parallelized_stages_end
         return schedule_dict
