@@ -5,6 +5,9 @@ from smartschedule.optimization.result import Result
 from smartschedule.optimization.total_capacity import TotalCapacity
 from smartschedule.optimization.total_weight import TotalWeight
 from smartschedule.optimization.weight_dimension import WeightDimension
+from smartschedule.simulation.additional_priced_capability import (
+    AdditionalPricedCapability,
+)
 from smartschedule.simulation.available_resource_capability import (
     AvailableResourceCapability,
 )
@@ -15,6 +18,29 @@ from smartschedule.simulation.simulated_project import SimulatedProject
 class SimulationFacade:
     def __init__(self, optimization_facade: OptimizationFacade) -> None:
         self._optimization_facade = optimization_facade
+
+    def profit_after_buying_new_capability(
+        self,
+        projects_simulations: list[SimulatedProject],
+        capabilities_without_new_one: SimulatedCapabilities,
+        new_prices_capability: AdditionalPricedCapability,
+    ) -> float:
+        capabilities_with_new_resources = capabilities_without_new_one.add(
+            new_prices_capability.available_resource_capability
+        )
+        result_without = self._optimization_facade.calculate(
+            self._to_items(projects_simulations),
+            self._to_capacity(capabilities_without_new_one),
+            lambda x: -x.value,
+        )
+        result_with = self._optimization_facade.calculate(
+            self._to_items(projects_simulations),
+            self._to_capacity(capabilities_with_new_resources),
+            lambda x: -x.value,
+        )
+        return (
+            result_with.profit - float(new_prices_capability.value)
+        ) - result_without.profit
 
     def which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
         self,

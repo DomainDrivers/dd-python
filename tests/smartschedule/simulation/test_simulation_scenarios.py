@@ -5,6 +5,12 @@ import pytest
 
 from smartschedule.optimization.optimization_facade import OptimizationFacade
 from smartschedule.shared.timeslot.time_slot import TimeSlot
+from smartschedule.simulation.additional_priced_capability import (
+    AdditionalPricedCapability,
+)
+from smartschedule.simulation.available_resource_capability import (
+    AvailableResourceCapability,
+)
 from smartschedule.simulation.capability import Capability
 from smartschedule.simulation.demand import Demand
 from smartschedule.simulation.demands import Demands
@@ -194,3 +200,60 @@ class TestSimulationScenarios:
 
         assert result_without_extra_resource.profit == 99
         assert result_with_extra_resource.profit == 108
+
+    def test_if_it_pays_off_to_pay_for_capability(
+        self,
+        project_1_id: ProjectId,
+        project_2_id: ProjectId,
+        jan_1_time_slot: TimeSlot,
+        staszek_id: UUID,
+        simulation_facade: SimulationFacade,
+    ) -> None:
+        simulated_projects = [
+            SimulatedProjectFactory.build(
+                project_id=project_1_id,
+                value=Decimal(100),
+                missing_demands=Demands(
+                    [Demand.demand_for(Capability.skill("JAVA-MID"), jan_1_time_slot)]
+                ),
+            ),
+            SimulatedProjectFactory.build(
+                project_id=project_2_id,
+                value=Decimal(40),
+                missing_demands=Demands(
+                    [Demand.demand_for(Capability.skill("JAVA-MID"), jan_1_time_slot)]
+                ),
+            ),
+        ]
+
+        simulated_availability = SimulatedCapabilitiesFactory.build(
+            num_capabilities=1,
+            capabilities__0__resource_id=staszek_id,
+            capabilities__0__capability=Capability.skill("JAVA-MID"),
+            capabilities__0__time_slot=jan_1_time_slot,
+        )
+
+        slawek = AdditionalPricedCapability(
+            Decimal(9999),
+            AvailableResourceCapability(
+                uuid4(), Capability.skill("JAVA-MID"), jan_1_time_slot
+            ),
+        )
+        staszek = AdditionalPricedCapability(
+            Decimal(3),
+            AvailableResourceCapability(
+                uuid4(), Capability.skill("JAVA-MID"), jan_1_time_slot
+            ),
+        )
+
+        buying_slawek_profit = simulation_facade.profit_after_buying_new_capability(
+            simulated_projects, simulated_availability, slawek
+        )
+        buying_staszek_profit = simulation_facade.profit_after_buying_new_capability(
+            simulated_projects, simulated_availability, staszek
+        )
+
+        # We get 40 from project 2 and lose 9999 for buying Slawek
+        assert buying_slawek_profit == -9959
+        # We get 40 from project 2 and lose 3 for buying Staszek
+        assert buying_staszek_profit == 37
