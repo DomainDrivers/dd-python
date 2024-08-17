@@ -3,12 +3,13 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from smartschedule.optimization.optimization_facade import OptimizationFacade
+from smartschedule.shared.timeslot.time_slot import TimeSlot
 from smartschedule.simulation.capability import Capability
 from smartschedule.simulation.demand import Demand
 from smartschedule.simulation.demands import Demands
 from smartschedule.simulation.project_id import ProjectId
 from smartschedule.simulation.simulation_facade import SimulationFacade
-from smartschedule.simulation.time_slot import TimeSlot
 from tests.smartschedule.simulation.available_capabilities_factory import (
     AvailableResourceCapabilityFactory,
     SimulatedCapabilitiesFactory,
@@ -50,7 +51,7 @@ def leon_id() -> UUID:
 
 @pytest.fixture()
 def simulation_facade() -> SimulationFacade:
-    return SimulationFacade()
+    return SimulationFacade(optimization_facade=OptimizationFacade())
 
 
 class TestSimulationScenarios:
@@ -103,7 +104,7 @@ class TestSimulationScenarios:
         )
 
         assert result.profit == 108
-        assert len(result.chosen_projects) == 2
+        assert len(result.chosen_items) == 2
 
     def test_picks_all_when_enough_capabilities(
         self,
@@ -136,7 +137,7 @@ class TestSimulationScenarios:
         )
 
         assert result.profit == 99
-        assert len(result.chosen_projects) == 1
+        assert len(result.chosen_items) == 1
 
     def test_can_simulate_having_extra_resources(
         self,

@@ -1,0 +1,2 @@
+class CapacityDimension:
+    pass

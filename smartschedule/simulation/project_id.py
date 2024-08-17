@@ -19,6 +19,9 @@ class ProjectId:
     def __hash__(self) -> int:
         return hash(self._project_id)
 
+    def __str__(self) -> str:
+        return str(self._project_id)
+
     @staticmethod
     def new_one() -> ProjectId:
         return ProjectId(uuid4())

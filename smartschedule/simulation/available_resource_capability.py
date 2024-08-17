@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from smartschedule.optimization.capacity_dimension import CapacityDimension
+from smartschedule.shared.timeslot.time_slot import TimeSlot
 from smartschedule.simulation.capability import Capability
-from smartschedule.simulation.time_slot import TimeSlot
 
 
 @dataclass(frozen=True)
-class AvailableResourceCapability:
+class AvailableResourceCapability(CapacityDimension):
     resource_id: UUID
     capability: Capability
     time_slot: TimeSlot

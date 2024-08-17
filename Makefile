@@ -1,5 +1,5 @@
 qa:
-	ruff check . --select I --fix
+	ruff check . --extend-select I --fix
 	ruff format .
 	mypy --strict --enable-incomplete-feature=NewGenericSyntax .
 	pytest tests/

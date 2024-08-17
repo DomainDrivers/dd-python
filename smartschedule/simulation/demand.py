@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from smartschedule.optimization.weight_dimension import WeightDimension
+from smartschedule.shared.timeslot.time_slot import TimeSlot
 from smartschedule.simulation.available_resource_capability import (
     AvailableResourceCapability,
 )
 from smartschedule.simulation.capability import Capability
-from smartschedule.simulation.time_slot import TimeSlot
 
 
 @dataclass(frozen=True)
-class Demand:
+class Demand(WeightDimension[AvailableResourceCapability]):
     capability: Capability
     slot: TimeSlot
 
