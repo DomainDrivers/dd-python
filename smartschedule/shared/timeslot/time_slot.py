@@ -11,6 +11,10 @@ class TimeSlot:
     from_: datetime
     to: datetime
 
+    @staticmethod
+    def empty() -> TimeSlot:
+        return TimeSlot(datetime.min, datetime.min)
+
     @classmethod
     def create_daily_time_slot_at_utc(cls, year: int, month: int, day: int) -> TimeSlot:
         this_day = date(year, month, day)
@@ -48,3 +52,18 @@ class TimeSlot:
         elif other.to > self.to:
             result.append(TimeSlot(self.to, other.to))
         return result
+
+    def is_empty(self) -> bool:
+        return self.from_ == self.to
+
+    def common_part_with(self, other: TimeSlot) -> TimeSlot:
+        if not self.overlaps(other):
+            return TimeSlot(self.from_, self.from_)
+        return TimeSlot(max(self.from_, other.from_), min(self.to, other.to))
+
+    @property
+    def duration(self) -> timedelta:
+        return self.to - self.from_
+
+    def stretch(self, duration: timedelta) -> TimeSlot:
+        return TimeSlot(self.from_ - duration, self.to + duration)

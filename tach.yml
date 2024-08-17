@@ -2,14 +2,19 @@
 modules:
   - path: smartschedule.allocation
     depends_on:
-      - path: smartschedule.simulation
       - path: smartschedule.shared
+      - path: smartschedule.simulation
   - path: smartschedule.optimization
     depends_on:
       - path: smartschedule.shared
   - path: smartschedule.planning.parallelization
     depends_on:
       - path: smartschedule.sorter
+      - path: smartschedule.shared
+  - path: smartschedule.planning.schedule
+    depends_on:
+      - path: smartschedule.planning.parallelization
+      - path: smartschedule.shared
   - path: smartschedule.shared
     depends_on: []
   - path: smartschedule.simulation

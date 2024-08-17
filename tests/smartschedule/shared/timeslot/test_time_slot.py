@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -215,3 +215,49 @@ class TestTimeSlot:
                 to=datetime(2022, 1, 20, tzinfo=timezone.utc),
             ),
         ]
+
+    def test_two_slots_have_common_part_when_overlap(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 15, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+
+        common = slot_1.common_part_with(slot_2)
+
+        assert not common.is_empty()
+        assert common == TimeSlot(
+            from_=datetime(2022, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 15, tzinfo=timezone.utc),
+        )
+
+    def test_two_slots_have_common_part_when_full_overlap(self) -> None:
+        slot_1 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+        slot_2 = TimeSlot(
+            from_=datetime(2022, 1, 1, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, tzinfo=timezone.utc),
+        )
+
+        common = slot_1.common_part_with(slot_2)
+
+        assert not common.is_empty()
+        assert slot_1 == common
+
+    def test_stretch(self) -> None:
+        slot = TimeSlot(
+            from_=datetime(2022, 1, 1, 10, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, 12, tzinfo=timezone.utc),
+        )
+
+        streched_slot = slot.stretch(timedelta(hours=1))
+
+        assert streched_slot == TimeSlot(
+            from_=datetime(2022, 1, 1, 9, tzinfo=timezone.utc),
+            to=datetime(2022, 1, 20, 13, tzinfo=timezone.utc),
+        )

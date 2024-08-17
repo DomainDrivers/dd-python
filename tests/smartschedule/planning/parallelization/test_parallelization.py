@@ -1,6 +1,7 @@
 import pytest
 
-from smartschedule.planning.parallelization.stage import ResourceName, Stage
+from smartschedule.planning.parallelization.resource_name import ResourceName
+from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.parallelization.stage_parallelization import (
     StageParallelization,
 )

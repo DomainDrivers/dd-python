@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import TypeAlias
+
+from smartschedule.planning.parallelization.resource_name import ResourceName
 
 
 @dataclass
@@ -20,11 +21,11 @@ class Stage:
     def with_chosen_resource_capabilities(self, *resources: ResourceName) -> Stage:
         return Stage(self.name, self.dependencies, set(resources), self.duration)
 
+    def of_duration(self, duration: timedelta) -> Stage:
+        return Stage(self.name, self.dependencies, self.resources, duration)
+
     def __str__(self) -> str:
         return self.name
 
     def __hash__(self) -> int:
         return hash(self.name)
-
-
-ResourceName: TypeAlias = str
