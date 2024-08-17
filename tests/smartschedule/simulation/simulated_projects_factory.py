@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
 import factory  # type: ignore
 
 from smartschedule.simulation.demands import Demands
@@ -13,6 +11,9 @@ class SimulatedProjectFactory(factory.Factory):  # type: ignore
     class Meta:
         model = SimulatedProject
 
+    class Params:
+        value = 0
+
     project_id = factory.LazyAttribute(lambda _: ProjectId.new_one())
-    earnings = Decimal(0)
+    value_getter = factory.LazyAttribute(lambda o: lambda: o.value)
     missing_demands = factory.LazyAttribute(lambda _: Demands.of([]))

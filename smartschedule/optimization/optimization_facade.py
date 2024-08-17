@@ -1,18 +1,24 @@
-from typing import TypeVar
+from typing import Callable, TypeVar
 
 from smartschedule.optimization.capacity_dimension import CapacityDimension
 from smartschedule.optimization.item import Item
 from smartschedule.optimization.result import Result
 from smartschedule.optimization.total_capacity import TotalCapacity
 from smartschedule.optimization.total_weight import TotalWeight
+from smartschedule.shared.typing_extensions import Comparable
 
 T = TypeVar("T", bound=CapacityDimension)
 
 
 class OptimizationFacade:
     def calculate(
-        self, items: list[Item[T]], total_capacity: TotalCapacity
+        self,
+        items: list[Item[T]],
+        total_capacity: TotalCapacity,
+        sort_key_getter: Callable[[Item[T]], Comparable] | None = None,
     ) -> Result[T]:
+        sort_key_getter = sort_key_getter or (lambda x: -x.value)
+
         capacities_size = len(total_capacity)
         dp = [0] * (capacities_size + 1)
         chosen_items_list: list[list[Item[T]]] = [
@@ -32,7 +38,7 @@ class OptimizationFacade:
         all_capacities = total_capacity.capacities
         item_to_capacities_map = {}
 
-        for item in sorted(items, key=lambda x: x.value, reverse=True):
+        for item in sorted(items, key=sort_key_getter):
             chosen_capacities = self._match_capacities(  # type: ignore
                 item.total_weight,
                 all_capacities,
