@@ -96,7 +96,7 @@ class PlanningFacade:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_critical_stage(critical_stage, stage_time_slot)
 
-    def plan_critical_stage_with(
+    def plan_critical_stage(
         self, project_id: ProjectId, critical_stage: Stage, stage_time_slot: TimeSlot
     ) -> None:
         project = self._project_repository.get(id=project_id)

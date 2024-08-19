@@ -22,9 +22,9 @@ class TestDurationCalculator:
         stage_2 = Stage("Stage 2", duration=timedelta(hours=24))
         stage_3 = Stage("Stage 3", duration=timedelta(days=2))
         stage_4 = Stage("Stage 4", duration=timedelta(days=1))
-        stage_4.depends_on(stage_3)
-        stage_3.depends_on(stage_2)
-        stage_2.depends_on(stage_1)
+        stage_4 = stage_4.depends_on(stage_3)
+        stage_3 = stage_3.depends_on(stage_2)
+        stage_2 = stage_2.depends_on(stage_1)
 
         duration = calculate_duration([stage_1, stage_2, stage_3, stage_4])
 
