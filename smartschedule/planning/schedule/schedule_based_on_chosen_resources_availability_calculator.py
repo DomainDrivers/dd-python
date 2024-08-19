@@ -1,8 +1,8 @@
 import functools
 from datetime import timedelta
 
+from smartschedule.availability.calendars import Calendars
 from smartschedule.planning.parallelization.stage import Stage
-from smartschedule.planning.schedule.calendars import Calendars
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 

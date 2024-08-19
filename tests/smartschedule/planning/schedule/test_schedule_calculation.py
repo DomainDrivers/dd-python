@@ -2,14 +2,15 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
+from smartschedule.availability.calendar import Calendar
+from smartschedule.availability.calendars import Calendars
 from smartschedule.planning.parallelization.parallel_stages import ParallelStages
 from smartschedule.planning.parallelization.parallel_stages_list import (
     ParallelStagesList,
 )
-from smartschedule.planning.parallelization.resource_name import ResourceName
 from smartschedule.planning.parallelization.stage import Stage
-from smartschedule.planning.schedule.calendars import Calendar, Calendars
 from smartschedule.planning.schedule.schedule import Schedule
+from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
     ScheduleAssert,

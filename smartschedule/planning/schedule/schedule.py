@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
+from smartschedule.availability.calendars import Calendars
 from smartschedule.planning.parallelization.parallel_stages import ParallelStages
 from smartschedule.planning.parallelization.parallel_stages_list import (
     ParallelStagesList,
 )
 from smartschedule.planning.parallelization.stage import Stage
-from smartschedule.planning.schedule.calendars import Calendars
 from smartschedule.planning.schedule.schedule_based_on_chosen_resources_availability_calculator import (
     ScheduleBasedOnChosenResourcesAvailabilityCalculator,
 )

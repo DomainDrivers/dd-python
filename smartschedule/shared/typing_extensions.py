@@ -1,4 +1,4 @@
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeAlias
 
 
 class SupportsDunderLT(Protocol):
@@ -10,3 +10,5 @@ class SupportsDunderGT(Protocol):
 
 
 Comparable = SupportsDunderLT | SupportsDunderGT
+
+JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None

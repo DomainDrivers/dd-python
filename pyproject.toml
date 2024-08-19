@@ -9,6 +9,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 python-dateutil = "*"
+sqlalchemy = "*"
+pydantic-settings = "*"
+fastapi = {version = "*", extras = ["all"]}
+pydantic = "*"
+lagom = "*"
+psycopg2-binary = "*"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"
@@ -16,6 +22,7 @@ pytest = "*"
 factory-boy = "*"
 tach = "*"
 types-python-dateutil = "*"
+testcontainers = {version = "*", extras = ["postgres"]}
 
 [build-system]
 requires = ["poetry-core"]

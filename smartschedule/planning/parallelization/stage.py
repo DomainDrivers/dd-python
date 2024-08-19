@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from smartschedule.planning.parallelization.resource_name import ResourceName
+from smartschedule.shared.resource_name import ResourceName
 
 
 @dataclass
