@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -17,28 +18,38 @@ class Allocations:
     def add(self, allocated_capability: AllocatedCapability) -> Allocations:
         return Allocations(all=self.all.union({allocated_capability}))
 
-    def remove(
-        self, to_remove: AllocatedCapability, time_slot: TimeSlot
-    ) -> Allocations:
-        allocated_resource = self.find(to_remove, time_slot)
-        if allocated_resource is None:
+    def remove(self, to_remove: UUID, time_slot: TimeSlot) -> Allocations:
+        allocated_capability = self.find(to_remove)
+        if allocated_capability is None:
             return self
-        difference = allocated_resource.time_slot.leftover_after_removing_common_with(
+        return self._remove_from_slot(allocated_capability, time_slot)
+
+    def _remove_from_slot(
+        self, allocated_capability: AllocatedCapability, time_slot: TimeSlot
+    ) -> Allocations:
+        difference = allocated_capability.time_slot.leftover_after_removing_common_with(
             time_slot
         )
         leftovers: set[AllocatedCapability] = {
             AllocatedCapability(
-                allocated_resource.resource_id, allocated_resource.capability, leftover
+                allocated_capability.resource_id,
+                allocated_capability.capability,
+                leftover,
             )
             for leftover in difference
-            if leftover.within(to_remove.time_slot)
+            if leftover.within(allocated_capability.time_slot)
         }
 
-        return Allocations(all=self.all.difference({to_remove}).union(leftovers))
+        return Allocations(
+            all=self.all.difference({allocated_capability}).union(leftovers)
+        )
 
-    def find(
-        self, capability: AllocatedCapability, for_slot: TimeSlot
-    ) -> AllocatedCapability | None:
+    def find(self, allocated_capability_id: UUID) -> AllocatedCapability | None:
         return next(
-            (allocation for allocation in self.all if allocation == capability), None
+            (
+                allocation
+                for allocation in self.all
+                if allocation.allocated_capability_id == allocated_capability_id
+            ),
+            None,
         )

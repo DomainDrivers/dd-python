@@ -25,10 +25,12 @@ class Project:
     def remove(
         self, capability: AllocatedCapability, for_slot: TimeSlot
     ) -> AllocatedCapability | None:
-        to_remove = self._allocations.find(capability, for_slot)
+        to_remove = self._allocations.find(capability.allocated_capability_id)
         if not to_remove:
             return None
-        self._allocations = self._allocations.remove(to_remove, for_slot)
+        self._allocations = self._allocations.remove(
+            to_remove.allocated_capability_id, for_slot
+        )
         return to_remove
 
     def add(self, allocated_capability: AllocatedCapability) -> Project:

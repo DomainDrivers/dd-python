@@ -4,11 +4,33 @@ from dataclasses import dataclass
 
 from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.demand import Demand
+from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
 @dataclass(frozen=True)
 class Demands:
     all: list[Demand]
+
+    @staticmethod
+    def none() -> Demands:
+        return Demands(all=[])
+
+    @staticmethod
+    def of(*demands: Demand) -> Demands:
+        return Demands(all=list(demands))
+
+    @staticmethod
+    def all_in_same_time_slot(
+        time_slot: TimeSlot, *capabilities: Capability
+    ) -> Demands:
+        return Demands.of(
+            *[Demand(capability, time_slot) for capability in capabilities]
+        )
+
+    def with_new(self, new_demands: Demands) -> Demands:
+        self.all.extend(new_demands.all)
+        return Demands(all=self.all[:])
 
     def missing_demands(self, allocations: Allocations) -> Demands:
         return Demands(
