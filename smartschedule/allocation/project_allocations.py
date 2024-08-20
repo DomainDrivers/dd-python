@@ -5,10 +5,17 @@ from uuid import UUID
 
 from sqlalchemy.orm import Mapped, mapped_column
 
+from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from smartschedule.allocation.capability_released import CapabilityReleased
 from smartschedule.allocation.demands import Demands
+from smartschedule.allocation.project_allocation_scheduled import (
+    ProjectAllocationScheduled,
+)
+from smartschedule.allocation.project_allocations_demands_scheduled import (
+    ProjectAllocationsDemandsScheduled,
+)
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.allocation.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
@@ -60,24 +67,42 @@ class ProjectAllocations:
         requested_slot: TimeSlot,
         when: datetime,
     ) -> CapabilitiesAllocated | None:
-        if self._nothing_allocated() or not self._within_project_time_slot(
-            requested_slot
-        ):
+        allocated_capability = AllocatedCapability(
+            resource_id.id, capability, requested_slot
+        )
+        new_allocations = self.allocations.add(allocated_capability)
+        if self._nothing_allocated(
+            new_allocations
+        ) or not self._within_project_time_slot(requested_slot):
             return None
-        return None  # return CapabilitiesAllocated(...)
+        self.allocations = new_allocations
+        return CapabilitiesAllocated(
+            allocated_capability_id=allocated_capability.allocated_capability_id,
+            project_id=self.project_id,
+            missing_demands=self.missing_demands(),
+            occurred_at=when,
+        )
 
-    def _nothing_allocated(self) -> bool:
-        return False
+    def _nothing_allocated(self, new_allocations: Allocations) -> bool:
+        return new_allocations == self.allocations
 
     def _within_project_time_slot(self, requested_slot: TimeSlot) -> bool:
-        return False
+        if self.time_slot.is_empty():
+            return True
+        return requested_slot.within(self.time_slot)
 
     def release(
         self, allocated_capability_id: UUID, time_slot: TimeSlot, when: datetime
     ) -> CapabilityReleased | None:
-        if self._nothing_released():
+        new_allocations = self.allocations.remove(allocated_capability_id, time_slot)
+        if new_allocations == self.allocations:
             return None
-        return None  # return CapabilityReleased(...)
+        self.allocations = new_allocations
+        return CapabilityReleased(
+            project_id=self.project_id,
+            missing_demands=self.missing_demands(),
+            occurred_at=when,
+        )
 
     def _nothing_released(self) -> bool:
         return False
@@ -87,3 +112,21 @@ class ProjectAllocations:
 
     def has_time_slot(self) -> bool:
         return not self.time_slot.is_empty()
+
+    def define_slot(
+        self, time_slot: TimeSlot, when: datetime
+    ) -> ProjectAllocationScheduled:
+        self.time_slot = time_slot
+        return ProjectAllocationScheduled(
+            project_id=self.project_id, from_to=time_slot, occurred_at=when
+        )
+
+    def add_demands(
+        self, demands: Demands, when: datetime
+    ) -> ProjectAllocationsDemandsScheduled:
+        self.demands = self.demands.with_new(demands)
+        return ProjectAllocationsDemandsScheduled(
+            project_id=self.project_id,
+            missing_demands=self.missing_demands(),
+            occurred_at=when,
+        )

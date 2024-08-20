@@ -2,22 +2,25 @@ from datetime import datetime, timedelta
 from typing import Final
 from uuid import uuid4
 
-import pytest
-
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from smartschedule.allocation.capability_released import CapabilityReleased
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
+from smartschedule.allocation.project_allocation_scheduled import (
+    ProjectAllocationScheduled,
+)
 from smartschedule.allocation.project_allocations import ProjectAllocations
+from smartschedule.allocation.project_allocations_demands_scheduled import (
+    ProjectAllocationsDemandsScheduled,
+)
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.allocation.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 class TestAllocationsToProject:
     WHEN: Final = datetime.min
     PROJECT_ID: Final = ProjectAllocationsId.new_one()
@@ -25,6 +28,7 @@ class TestAllocationsToProject:
     FEB_1: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 1)
     FEB_2: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 2)
     JANUARY: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 1, 1)
+    FEBRUARY: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 1)
 
     def test_allocate(self) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
@@ -210,3 +214,42 @@ class TestAllocationsToProject:
                 self.ADMIN_ID.id, Capability.permission("admin"), the_rest
             ),
         }
+
+    def test_change_demands(self) -> None:
+        admin_permission = Demand(Capability.permission("ADMIN"), self.FEB_1)
+        java_skill = Demand(Capability.skill("JAVA"), self.FEB_1)
+        demands = Demands.of(admin_permission, java_skill)
+        allocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
+
+        allocations.allocate(
+            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+        )
+
+        python_skill = Demand(Capability.skill("PYTHON"), self.FEB_1)
+        event = allocations.add_demands(Demands.of(python_skill), self.WHEN)
+
+        assert allocations.missing_demands() == Demands.all_in_same_time_slot(
+            self.FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")
+        )
+        assert event == ProjectAllocationsDemandsScheduled(
+            self.PROJECT_ID,
+            Demands.all_in_same_time_slot(
+                self.FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")
+            ),
+            self.WHEN,
+            event.uuid,
+        )
+
+    def test_change_project_dates(self) -> None:
+        allocations = ProjectAllocations(
+            self.PROJECT_ID, Allocations.none(), Demands.none(), self.JANUARY
+        )
+
+        event = allocations.define_slot(self.FEBRUARY, self.WHEN)
+
+        assert event == ProjectAllocationScheduled(
+            project_id=self.PROJECT_ID,
+            from_to=self.FEBRUARY,
+            occurred_at=self.WHEN,
+            uuid=event.uuid,
+        )
