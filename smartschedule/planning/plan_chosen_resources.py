@@ -39,9 +39,7 @@ class PlanChosenResources:
             project_id, needed_resources, time_boundaries
         )
         # TODO: when availability is implemented
-        needed_resources_calendars = (
-            self._availability_facade.availabilities_of_resources()
-        )
+        needed_resources_calendars = Calendars.of()
         schedule = self._create_schedule_adjusting_to_calendars(
             needed_resources_calendars, *stages
         )
