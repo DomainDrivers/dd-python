@@ -2,7 +2,9 @@ from typing import Any, Protocol, Self, Sequence, Type, TypeVar, cast
 from uuid import UUID
 
 from pydantic import TypeAdapter
-from sqlalchemy import Dialect, select, types
+from sqlalchemy import Column, Dialect, select, types
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import registry as Registry
 
@@ -93,14 +95,26 @@ TIdentity = TypeVar("TIdentity")
 
 class SQLAlchemyRepository[TModel, TIdentity]:
     _type: Type[TModel]
+    _pk_col: Column[EmbeddableUUID]
+
+    class NotFound(Exception):
+        pass
 
     def __class_getitem__(cls, type_arg: tuple[Type[TModel], Type[TIdentity]]) -> Self:
         model_type, identity_type = type_arg
 
+        mapper = inspect(model_type)
+        assert mapper
+        primary_key_columns = mapper.primary_key
+        assert (
+            len(primary_key_columns) == 1
+        ), "Only single column primary keys are supported"
+        pk_col = primary_key_columns[0]
+
         specialized_class = type(
             f"SQLAlchemyRepository[{model_type.__name__}, {identity_type}]",
             (cls,),
-            {"_type": model_type},
+            {"_type": model_type, "_pk_col": pk_col},
         )
         return cast(Self, specialized_class)
 
@@ -112,9 +126,15 @@ class SQLAlchemyRepository[TModel, TIdentity]:
         self._session.flush([model])
 
     def get(self, id: TIdentity) -> TModel:
-        stmt = select(self._type).filter_by(id=id)
-        return self._session.execute(stmt).scalar_one()
+        stmt = select(self._type).filter(self._pk_col == id)
+        try:
+            return self._session.execute(stmt).scalar_one()
+        except NoResultFound:
+            raise self.NotFound
 
-    def get_all(self, ids: list[TIdentity]) -> Sequence[TModel]:
-        stmt = select(self._type).filter(getattr(self._type, "id").in_(ids))
+    def get_all(self, ids: list[TIdentity] | None = None) -> Sequence[TModel]:
+        stmt = select(self._type)
+        if ids is not None:
+            stmt = stmt.filter(self._pk_col.in_(ids))
+
         return self._session.execute(stmt).scalars().all()

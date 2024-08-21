@@ -13,6 +13,10 @@ class Capability:
         return Capability(name, "SKILL")
 
     @classmethod
+    def skills(cls, *names: str) -> list[Capability]:
+        return [Capability(name, "SKILL") for name in names]
+
+    @classmethod
     def permission(cls, name: str) -> Capability:
         return Capability(name, "PERMISSION")
 

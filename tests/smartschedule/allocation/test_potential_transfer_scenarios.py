@@ -1,15 +1,23 @@
+from __future__ import annotations
+
 from datetime import timedelta
 from decimal import Decimal
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
-from smartschedule.allocation.allocation_facade import AllocationFacade
+from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
-from smartschedule.allocation.project import Project
-from smartschedule.allocation.projects import Projects
+from smartschedule.allocation.potential_transfers import PotentialTransfers
+from smartschedule.allocation.potential_transfers_service import (
+    PotentialTransfersService,
+)
+from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
+from smartschedule.allocation.projects_allocations_summary import (
+    ProjectsAllocationsSummary,
+)
 from smartschedule.optimization.optimization_facade import OptimizationFacade
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -47,13 +55,13 @@ def demands_for_java_and_python_in_jan(jan_1: TimeSlot) -> Demands:
 
 
 @pytest.fixture()
-def banking_soft_id() -> UUID:
-    return uuid4()
+def banking_soft_id() -> ProjectAllocationsId:
+    return ProjectAllocationsId.new_one()
 
 
 @pytest.fixture()
-def insurance_soft_id() -> UUID:
-    return uuid4()
+def insurance_soft_id() -> ProjectAllocationsId:
+    return ProjectAllocationsId.new_one()
 
 
 @pytest.fixture()
@@ -62,29 +70,33 @@ def staszek_java_mid(jan_1: TimeSlot) -> AllocatedCapability:
 
 
 @pytest.fixture()
-def allocation_facade() -> AllocationFacade:
-    return AllocationFacade(SimulationFacade(OptimizationFacade()))
+def potential_transfers_service() -> PotentialTransfersService:
+    return PotentialTransfersService(SimulationFacade(OptimizationFacade()))
 
 
 class TestPotentialTransferScenarios:
     def test_simulates_moving_capabilities_to_different_project(
         self,
         demand_for_java_mid_in_jan: Demands,
-        banking_soft_id: UUID,
-        insurance_soft_id: UUID,
+        banking_soft_id: ProjectAllocationsId,
+        insurance_soft_id: ProjectAllocationsId,
         staszek_java_mid: AllocatedCapability,
         jan_1: TimeSlot,
-        allocation_facade: AllocationFacade,
+        potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(demand_for_java_mid_in_jan, Decimal(9))
-        insurance_soft = Project(demand_for_java_mid_in_jan, Decimal(90))
-        projects = Projects(
-            {banking_soft_id: banking_soft, insurance_soft_id: insurance_soft}
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        insurance_soft = Project(
+            insurance_soft_id, demand_for_java_mid_in_jan, Decimal(90)
         )
         banking_soft.add(staszek_java_mid)
+        potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
 
-        result = allocation_facade.check_potential_transfer(
-            projects, banking_soft_id, insurance_soft_id, staszek_java_mid, jan_1
+        result = potential_transfers_service.check_potential_transfer(
+            potential_transfers,
+            banking_soft_id,
+            insurance_soft_id,
+            staszek_java_mid,
+            jan_1,
         )
 
         assert result == 81
@@ -93,21 +105,21 @@ class TestPotentialTransferScenarios:
         self,
         demand_for_java_mid_in_jan: Demands,
         demand_for_java_just_for_15min_in_jan: Demands,
-        banking_soft_id: UUID,
-        insurance_soft_id: UUID,
+        banking_soft_id: ProjectAllocationsId,
+        insurance_soft_id: ProjectAllocationsId,
         staszek_java_mid: AllocatedCapability,
         fifteen_minutes_in_jan: TimeSlot,
-        allocation_facade: AllocationFacade,
+        potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(demand_for_java_mid_in_jan, Decimal(9))
-        insurance_soft = Project(demand_for_java_just_for_15min_in_jan, Decimal(99))
-        projects = Projects(
-            {banking_soft_id: banking_soft, insurance_soft_id: insurance_soft}
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        insurance_soft = Project(
+            insurance_soft_id, demand_for_java_just_for_15min_in_jan, Decimal(99)
         )
         banking_soft.add(staszek_java_mid)
+        potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
 
-        result = allocation_facade.check_potential_transfer(
-            projects,
+        result = potential_transfers_service.check_potential_transfer(
+            potential_transfers,
             banking_soft_id,
             insurance_soft_id,
             staszek_java_mid,
@@ -120,111 +132,52 @@ class TestPotentialTransferScenarios:
         self,
         demand_for_java_mid_in_jan: Demands,
         demands_for_java_and_python_in_jan: Demands,
-        banking_soft_id: UUID,
-        insurance_soft_id: UUID,
+        banking_soft_id: ProjectAllocationsId,
+        insurance_soft_id: ProjectAllocationsId,
         staszek_java_mid: AllocatedCapability,
         jan_1: TimeSlot,
-        allocation_facade: AllocationFacade,
+        potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(demand_for_java_mid_in_jan, Decimal(9))
-        insurance_soft = Project(demands_for_java_and_python_in_jan, Decimal(99))
-        projects = Projects(
-            {banking_soft_id: banking_soft, insurance_soft_id: insurance_soft}
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        insurance_soft = Project(
+            insurance_soft_id, demands_for_java_and_python_in_jan, Decimal(99)
         )
         banking_soft.add(staszek_java_mid)
+        potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
 
-        result = allocation_facade.check_potential_transfer(
-            projects, banking_soft_id, insurance_soft_id, staszek_java_mid, jan_1
+        result = potential_transfers_service.check_potential_transfer(
+            potential_transfers,
+            banking_soft_id,
+            insurance_soft_id,
+            staszek_java_mid,
+            jan_1,
         )
 
         assert result == -9
 
+    @staticmethod
+    def _to_potential_transfers(*projects: Project) -> PotentialTransfers:
+        allocations: dict[ProjectAllocationsId, Allocations] = {}
+        demands: dict[ProjectAllocationsId, Demands] = {}
+        earnings: dict[ProjectAllocationsId, Decimal] = {}
+        for project in projects:
+            allocations[project.id] = project.allocations
+            demands[project.id] = project.demands
+            earnings[project.id] = project.earnings
+        return PotentialTransfers(
+            ProjectsAllocationsSummary({}, allocations, demands), earnings
+        )
 
-# +package domaindrivers.smartschedule.allocation;
-# +
-# +import domaindrivers.smartschedule.optimization.OptimizationFacade;
-# +import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
-# +import domaindrivers.smartschedule.simulation.*;
-# +import org.junit.jupiter.api.Test;
-# +
-# +import java.time.temporal.ChronoUnit;
-# +import java.util.List;
-# +import java.util.Map;
-# +import java.util.UUID;
-# +
-# +import static domaindrivers.smartschedule.shared.capability.Capability.skill;
-# +import static java.math.BigDecimal.valueOf;
-# +import static org.junit.jupiter.api.Assertions.assertEquals;
-# +
-# +class PotentialTransferScenarios {
-# +
-# +    static final TimeSlot JAN_1 = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
-# +    static final TimeSlot FIFTEEN_MINUTES_IN_JAN = new TimeSlot(JAN_1.from(), JAN_1.from().plus(15, ChronoUnit.MINUTES));
-# +    static final Demands DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN = new Demands(List.of(new Demand(skill("JAVA-MID"), FIFTEEN_MINUTES_IN_JAN)));
-# +    static final Demands DEMAND_FOR_JAVA_MID_IN_JAN = new Demands(List.of(new Demand(skill("JAVA-MID"), JAN_1)));
-# +    static final Demands DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN = new Demands(List.of(new Demand(skill("JAVA-MID"), JAN_1), new Demand(skill("PYTHON-MID"), JAN_1)));
-# +
-# +    static final UUID BANKING_SOFT_ID = UUID.randomUUID();
-# +    static final UUID INSURANCE_SOFT_ID = UUID.randomUUID();
-# +    static final AllocatedCapability STASZEK_JAVA_MID = new AllocatedCapability(UUID.randomUUID(), skill("JAVA-MID"), JAN_1);
-# +
-# +    AllocationFacade simulationFacade = new AllocationFacade(new SimulationFacade(new OptimizationFacade()));
-# +
-# +    @Test
-# +    void simulatesMovingCapabilitiesToDifferentProject() {
-# +        //given
-# +        Project bankingSoft =
-# +                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
-# +        Project insuranceSoft =
-# +                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(90));
-# +        Projects projects = new Projects(
-# +                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-# +        //and
-# +        bankingSoft.add(STASZEK_JAVA_MID);
-# +
-# +        //when
-# +        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
-# +
-# +        //then
-# +        assertEquals(81d, result);
-# +    }
-# +
-# +    @Test
-# +    void simulatesMovingCapabilitiesToDifferentProjectJustForAWhile() {
-# +        //given
-# +        Project bankingSoft =
-# +                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
-# +        Project insuranceSoft =
-# +                new Project(DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, valueOf(99));
-# +        Projects projects = new Projects(
-# +                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-# +        //and
-# +        bankingSoft.add(STASZEK_JAVA_MID);
-# +
-# +        //when
-# +        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, FIFTEEN_MINUTES_IN_JAN);
-# +
-# +        //then
-# +        assertEquals(90d, result);
-# +    }
-# +
-# +    @Test
-# +    void theMoveGivesZeroProfitWhenThereAreStillMissingDemands() {
-# +        //given
-# +        Project bankingSoft =
-# +                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
-# +        Project insuranceSoft =
-# +                new Project(DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, valueOf(99));
-# +        Projects projects = new Projects(
-# +                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-# +        //and
-# +        bankingSoft.add(STASZEK_JAVA_MID);
-# +
-# +        //when
-# +        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
-# +
-# +        //then
-# +        assertEquals(-9d, result);
-# +    }
-# +
-# +}
+
+class Project:
+    def __init__(
+        self, id: ProjectAllocationsId, demands: Demands, earnings: Decimal
+    ) -> None:
+        self.id = id
+        self.earnings = earnings
+        self.demands = demands
+        self.allocations = Allocations.none()
+
+    def add(self, allocated_capability: AllocatedCapability) -> Project:
+        self.allocations = self.allocations.add(allocated_capability)
+        return self
