@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
+from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.potential_transfers import PotentialTransfers
@@ -84,9 +84,9 @@ class TestPotentialTransferScenarios:
         jan_1: TimeSlot,
         potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Earnings(9))
         insurance_soft = Project(
-            insurance_soft_id, demand_for_java_mid_in_jan, Decimal(90)
+            insurance_soft_id, demand_for_java_mid_in_jan, Earnings(90)
         )
         banking_soft.add(staszek_java_mid)
         potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
@@ -111,9 +111,9 @@ class TestPotentialTransferScenarios:
         fifteen_minutes_in_jan: TimeSlot,
         potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Earnings(9))
         insurance_soft = Project(
-            insurance_soft_id, demand_for_java_just_for_15min_in_jan, Decimal(99)
+            insurance_soft_id, demand_for_java_just_for_15min_in_jan, Earnings(99)
         )
         banking_soft.add(staszek_java_mid)
         potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
@@ -138,9 +138,9 @@ class TestPotentialTransferScenarios:
         jan_1: TimeSlot,
         potential_transfers_service: PotentialTransfersService,
     ) -> None:
-        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Decimal(9))
+        banking_soft = Project(banking_soft_id, demand_for_java_mid_in_jan, Earnings(9))
         insurance_soft = Project(
-            insurance_soft_id, demands_for_java_and_python_in_jan, Decimal(99)
+            insurance_soft_id, demands_for_java_and_python_in_jan, Earnings(99)
         )
         banking_soft.add(staszek_java_mid)
         potential_transfers = self._to_potential_transfers(banking_soft, insurance_soft)
@@ -159,7 +159,7 @@ class TestPotentialTransferScenarios:
     def _to_potential_transfers(*projects: Project) -> PotentialTransfers:
         allocations: dict[ProjectAllocationsId, Allocations] = {}
         demands: dict[ProjectAllocationsId, Demands] = {}
-        earnings: dict[ProjectAllocationsId, Decimal] = {}
+        earnings: dict[ProjectAllocationsId, Earnings] = {}
         for project in projects:
             allocations[project.id] = project.allocations
             demands[project.id] = project.demands
@@ -171,7 +171,7 @@ class TestPotentialTransferScenarios:
 
 class Project:
     def __init__(
-        self, id: ProjectAllocationsId, demands: Demands, earnings: Decimal
+        self, id: ProjectAllocationsId, demands: Demands, earnings: Earnings
     ) -> None:
         self.id = id
         self.earnings = earnings

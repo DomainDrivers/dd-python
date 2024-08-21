@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import functools
 from dataclasses import dataclass
-from decimal import Decimal
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
+from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.allocation.projects_allocations_summary import (
     ProjectsAllocationsSummary,
@@ -19,7 +19,7 @@ from smartschedule.simulation.simulated_project import SimulatedProject
 @dataclass(frozen=True)
 class PotentialTransfers:
     summary: ProjectsAllocationsSummary
-    earnings: dict[ProjectAllocationsId, Decimal]
+    earnings: dict[ProjectAllocationsId, Earnings]
 
     def transfer(
         self,
@@ -51,7 +51,7 @@ class PotentialTransfers:
             SimulatedProject(
                 project_id=ProjectId(project_id.id),
                 value_getter=functools.partial(
-                    lambda value: value, self.earnings[project_id]
+                    lambda value: value, self.earnings[project_id].to_decimal()
                 ),
                 missing_demands=self._missing_demands(project_id),
             )
