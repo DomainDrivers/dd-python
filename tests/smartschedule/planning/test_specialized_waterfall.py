@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Final
 
-from smartschedule.allocation.resource_id import ResourceId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.project_id import ProjectId

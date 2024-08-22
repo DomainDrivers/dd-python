@@ -1,15 +1,15 @@
 import pytest
 
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.parallelization.stage_parallelization import (
     StageParallelization,
 )
-from smartschedule.shared.resource_name import ResourceName
 
-LEON = ResourceName("Leon")
-ERYK = ResourceName("Eryk")
-SLAWEK = ResourceName("Sławek")
-KUBA = ResourceName("Kuba")
+LEON = ResourceId.new_one()
+ERYK = ResourceId.new_one()
+SLAWEK = ResourceId.new_one()
+KUBA = ResourceId.new_one()
 
 
 class TestParallelization:

@@ -3,6 +3,7 @@ from typing import Final
 from smartschedule.availability.blockade import Blockade
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -10,14 +11,14 @@ class ResourceAvailability:
     def __init__(
         self,
         id: ResourceAvailabilityId,
-        resource_id: ResourceAvailabilityId,
+        resource_id: ResourceId,
         segment: TimeSlot,
-        parent_id: ResourceAvailabilityId | None = None,
+        parent_id: ResourceId | None = None,
         blockade: Blockade | None = None,
         version: int = 0,
     ) -> None:
         if parent_id is None:
-            parent_id = ResourceAvailabilityId.none()
+            parent_id = ResourceId.new_one()
 
         if blockade is None:
             blockade = Blockade.none()

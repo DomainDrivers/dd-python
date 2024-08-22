@@ -23,6 +23,7 @@ from smartschedule.availability.resource_availability_id import ResourceAvailabi
 from smartschedule.availability.resource_grouped_availability import (
     ResourceGroupedAvailability,
 )
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.sqlalchemy_extensions import registry
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -68,7 +69,7 @@ class ResourceAvailabilityRepository:
         return _to_resource_availability(row)
 
     def load_all_within_slot(
-        self, resource_id: ResourceAvailabilityId, slot: TimeSlot
+        self, resource_id: ResourceId, slot: TimeSlot
     ) -> list[ResourceAvailability]:
         stmt = select(availabilities).filter(
             availabilities.c.resource_id == resource_id.id,
@@ -78,7 +79,7 @@ class ResourceAvailabilityRepository:
         return [_to_resource_availability(row) for row in self._session.execute(stmt)]
 
     def load_all_by_parent_id_within_slot(
-        self, parent_id: ResourceAvailabilityId, slot: TimeSlot
+        self, parent_id: ResourceId, slot: TimeSlot
     ) -> list[ResourceAvailability]:
         stmt = select(availabilities).filter(
             availabilities.c.resource_parent_id == parent_id.id,
@@ -174,9 +175,9 @@ def _to_resource_availability(row: Any) -> ResourceAvailability:
 
     return ResourceAvailability(
         id=ResourceAvailabilityId(row[0]),
-        resource_id=ResourceAvailabilityId(row[1]),
+        resource_id=ResourceId(row[1]),
         segment=TimeSlot(row[4], row[5]),
-        parent_id=ResourceAvailabilityId(row[2]),
+        parent_id=ResourceId(row[2]),
         version=row[3],
         blockade=blockade,
     )

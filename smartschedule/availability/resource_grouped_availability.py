@@ -5,6 +5,7 @@ from typing import Final
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_availability import ResourceAvailability
 from smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.availability.segment import segments
 from smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -16,9 +17,9 @@ class ResourceGroupedAvailability:
 
     @staticmethod
     def of(
-        resource_id: ResourceAvailabilityId,
+        resource_id: ResourceId,
         timeslot: TimeSlot,
-        parent_id: ResourceAvailabilityId | None = None,
+        parent_id: ResourceId | None = None,
     ) -> ResourceGroupedAvailability:
         resource_availabilities = [
             ResourceAvailability(
@@ -49,14 +50,8 @@ class ResourceGroupedAvailability:
             for resource_availability in self.resource_availabilities
         )
 
-    def owners(self) -> set[Owner]:
-        return {
-            resource_availability.blocked_by()
-            for resource_availability in self.resource_availabilities
-        }
-
     @property
-    def resource_id(self) -> ResourceAvailabilityId | None:
+    def resource_id(self) -> ResourceId | None:
         if len(self.resource_availabilities) > 0:
             return self.resource_availabilities[0].resource_id
         else:

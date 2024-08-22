@@ -4,13 +4,13 @@ import pytest
 
 from smartschedule.availability.calendar import Calendar
 from smartschedule.availability.calendars import Calendars
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.parallelization.parallel_stages import ParallelStages
 from smartschedule.planning.parallelization.parallel_stages_list import (
     ParallelStagesList,
 )
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.schedule.schedule import Schedule
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
     ScheduleAssert,
@@ -171,9 +171,9 @@ class TestScheduleCalculation:
         jan_3_6: TimeSlot,
         jan_10_20: TimeSlot,
     ) -> None:
-        r1 = ResourceName("r1")
-        r2 = ResourceName("r2")
-        r3 = ResourceName("r3")
+        r1 = ResourceId.new_one()
+        r2 = ResourceId.new_one()
+        r3 = ResourceId.new_one()
 
         stage1 = (
             Stage("Stage1")

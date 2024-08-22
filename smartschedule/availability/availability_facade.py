@@ -1,11 +1,11 @@
 from smartschedule.availability.owner import Owner
-from smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from smartschedule.availability.resource_availability_repository import (
     ResourceAvailabilityRepository,
 )
 from smartschedule.availability.resource_grouped_availability import (
     ResourceGroupedAvailability,
 )
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.availability.segment import segments
 from smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -17,9 +17,9 @@ class AvailabilityFacade:
 
     def create_resource_slots(
         self,
-        resource_id: ResourceAvailabilityId,
+        resource_id: ResourceId,
         time_slot: TimeSlot,
-        parent_id: ResourceAvailabilityId | None = None,
+        parent_id: ResourceId | None = None,
     ) -> None:
         grouped_availability = ResourceGroupedAvailability.of(
             resource_id, time_slot, parent_id
@@ -27,7 +27,7 @@ class AvailabilityFacade:
         self._repository.save_new(grouped_availability)
 
     def block(
-        self, resource_id: ResourceAvailabilityId, time_slot: TimeSlot, requester: Owner
+        self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner
     ) -> bool:
         to_block = self._find_grouped(resource_id, time_slot)
         return self._block(to_block, requester)
@@ -40,7 +40,7 @@ class AvailabilityFacade:
             return False
 
     def release(
-        self, resource_id: ResourceAvailabilityId, time_slot: TimeSlot, requester: Owner
+        self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner
     ) -> bool:
         to_release = self._find_grouped(resource_id, time_slot)
         result = to_release.release(requester)
@@ -50,7 +50,7 @@ class AvailabilityFacade:
             return False
 
     def disable(
-        self, resource_id: ResourceAvailabilityId, time_slot: TimeSlot, requester: Owner
+        self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner
     ) -> bool:
         to_disable = self._find_grouped(resource_id, time_slot)
         result = to_disable.disable(requester)
@@ -60,7 +60,7 @@ class AvailabilityFacade:
             return False
 
     def _find_grouped(
-        self, resource_id: ResourceAvailabilityId, within: TimeSlot
+        self, resource_id: ResourceId, within: TimeSlot
     ) -> ResourceGroupedAvailability:
         normalized = segments.normalize_to_segment_boundaries(
             within, SegmentInMinutes.default_segment()
@@ -69,7 +69,7 @@ class AvailabilityFacade:
         return ResourceGroupedAvailability(availabilities)
 
     def find(
-        self, resource_id: ResourceAvailabilityId, within: TimeSlot
+        self, resource_id: ResourceId, within: TimeSlot
     ) -> ResourceGroupedAvailability:
         normalized = segments.normalize_to_segment_boundaries(
             within, SegmentInMinutes.default_segment()
@@ -78,7 +78,7 @@ class AvailabilityFacade:
         return ResourceGroupedAvailability(availabilities)
 
     def find_by_parent_id(
-        self, parent_id: ResourceAvailabilityId, within: TimeSlot
+        self, parent_id: ResourceId, within: TimeSlot
     ) -> ResourceGroupedAvailability:
         normalized = segments.normalize_to_segment_boundaries(
             within, SegmentInMinutes.default_segment()

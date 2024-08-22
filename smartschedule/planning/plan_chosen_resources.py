@@ -2,12 +2,12 @@ from itertools import chain
 
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.calendars import Calendars
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.chosen_resources import ChosenResources
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.planning.project_repository import ProjectRepository
 from smartschedule.planning.schedule.schedule import Schedule
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -23,7 +23,7 @@ class PlanChosenResources:
     def define_resources_within_dates(
         self,
         project_id: ProjectId,
-        resources: set[ResourceName],
+        resources: set[ResourceId],
         time_boundaries: TimeSlot,
     ) -> None:
         project = self._project_repository.get(id=project_id)

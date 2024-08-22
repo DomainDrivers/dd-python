@@ -3,7 +3,7 @@ from smartschedule.allocation.allocation_facade import AllocationFacade
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from smartschedule.allocation.resource_id import ResourceId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 

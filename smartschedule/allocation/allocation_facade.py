@@ -11,7 +11,7 @@ from smartschedule.allocation.project_allocations_repository import (
 from smartschedule.allocation.projects_allocations_summary import (
     ProjectsAllocationsSummary,
 )
-from smartschedule.allocation.resource_id import ResourceId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 

@@ -3,6 +3,7 @@ from typing import Final
 
 import pytest
 
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.demand import Demand
 from smartschedule.planning.demands import Demands
 from smartschedule.planning.demands_per_stage import DemandsPerStage
@@ -10,7 +11,6 @@ from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.shared.capability.capability import Capability
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
     ScheduleAssert,
@@ -19,9 +19,9 @@ from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
 
 class TestStandardWaterfall:
     JAN_1: Final = datetime(2020, 1, 1)
-    RESOURCE_1: Final = ResourceName("r1")
-    RESOURCE_2: Final = ResourceName("r2")
-    RESOURCE_4: Final = ResourceName("r4")
+    RESOURCE_1: Final = ResourceId.new_one()
+    RESOURCE_2: Final = ResourceId.new_one()
+    RESOURCE_4: Final = ResourceId.new_one()
     JAN_1_2: Final = TimeSlot(datetime(2020, 1, 1), datetime(2020, 1, 2))
     JAN_2_5: Final = TimeSlot(datetime(2020, 1, 2), datetime(2020, 1, 5))
     JAN_2_12: Final = TimeSlot(datetime(2020, 1, 2), datetime(2020, 1, 12))

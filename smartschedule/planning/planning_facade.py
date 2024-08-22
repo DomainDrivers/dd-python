@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.demands import Demands
 from smartschedule.planning.demands_per_stage import DemandsPerStage
 from smartschedule.planning.parallelization.duration_calculator import (
@@ -59,7 +60,7 @@ class PlanningFacade:
     def define_resources_within_dates(
         self,
         project_id: ProjectId,
-        chosen_resources: set[ResourceName],
+        chosen_resources: set[ResourceId],
         time_boundaries: TimeSlot,
     ) -> None:
         self._plan_chosen_resources_service.define_resources_within_dates(

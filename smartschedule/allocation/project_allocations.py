@@ -17,7 +17,7 @@ from smartschedule.allocation.project_allocations_demands_scheduled import (
     ProjectAllocationsDemandsScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from smartschedule.allocation.resource_id import ResourceId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.sqlalchemy_extensions import AsJSON, EmbeddedUUID, registry
 from smartschedule.shared.timeslot.time_slot import TimeSlot

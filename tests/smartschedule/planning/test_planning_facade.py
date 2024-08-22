@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 import pytest
 from lagom import Container
 
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.chosen_resources import ChosenResources
 from smartschedule.planning.demand import Demand
 from smartschedule.planning.demands import Demands
@@ -11,7 +12,6 @@ from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.schedule.schedule import Schedule
 from smartschedule.shared.capability.capability import Capability
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -96,7 +96,7 @@ class TestPlanningFacade:
     ) -> None:
         project_id = planning_facade.add_new_project("project")
 
-        needed_resources = {ResourceName("resource1")}
+        needed_resources = {ResourceId.new_one()}
         first_half_of_the_year = TimeSlot(
             from_=datetime(2022, 1, 1), to=datetime(2022, 6, 30)
         )

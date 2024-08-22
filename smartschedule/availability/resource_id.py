@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 
+@dataclass(frozen=True)
 class ResourceId:
-    def __init__(self, uuid: UUID) -> None:
-        self._resource_id = uuid
+    _resource_id: UUID
 
     @property
     def id(self) -> UUID:

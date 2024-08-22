@@ -6,6 +6,7 @@ from smartschedule.availability.resource_availability_id import ResourceAvailabi
 from smartschedule.availability.resource_availability_repository import (
     ResourceAvailabilityRepository,
 )
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -16,7 +17,7 @@ class TestResourceAvailabilityOptimisticLocking:
         self, repository: ResourceAvailabilityRepository
     ) -> None:
         resource_availability_id = ResourceAvailabilityId.new_one()
-        resource_id = ResourceAvailabilityId.new_one()
+        resource_id = ResourceId.new_one()
         resource_availability = ResourceAvailability(
             resource_availability_id, resource_id, self.ONE_MONTH
         )
@@ -33,7 +34,7 @@ class TestResourceAvailabilityOptimisticLocking:
         self, repository: ResourceAvailabilityRepository
     ) -> None:
         resource_availability_id = ResourceAvailabilityId.new_one()
-        resource_id = ResourceAvailabilityId.new_one()
+        resource_id = ResourceId.new_one()
         resource_availability = ResourceAvailability(
             resource_availability_id, resource_id, self.ONE_MONTH
         )

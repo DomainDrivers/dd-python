@@ -3,13 +3,12 @@ from typing import Final
 
 import pytest
 
-from smartschedule.allocation.resource_id import ResourceId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.project_card import ProjectCard
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.shared.capability.capability import Capability
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
     ScheduleAssert,
@@ -30,15 +29,15 @@ class TestRd:
         self, planning_facade: PlanningFacade
     ) -> None:
         project_id = planning_facade.add_new_project("R&D")
-        r1 = ResourceName("r1")
+        r1 = ResourceId.new_one()
         java_available_in_january = self._resource_available_for_capability_in_period(
             r1, Capability.skill("JAVA"), self.JANUARY
         )
-        r2 = ResourceName("r2")
+        r2 = ResourceId.new_one()
         php_available_in_february = self._resource_available_for_capability_in_period(
             r2, Capability.skill("PHP"), self.FEBRUARY
         )
-        r3 = ResourceName("r3")
+        r3 = ResourceId.new_one()
         csharp_available_in_march = self._resource_available_for_capability_in_period(
             r3, Capability.skill("CSHARP"), self.MARCH
         )
@@ -82,7 +81,7 @@ class TestRd:
         self._assert_project_is_not_parallelized(loaded)
 
     def _resource_available_for_capability_in_period(
-        self, resource_name: ResourceName, capability: Capability, time_slot: TimeSlot
+        self, resource_id: ResourceId, capability: Capability, time_slot: TimeSlot
     ) -> ResourceId:
         # TODO
         return ResourceId.new_one()

@@ -3,6 +3,7 @@ import pytest
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_availability import ResourceAvailability
 from smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -10,7 +11,7 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 def resource_availability() -> ResourceAvailability:
     return ResourceAvailability(
         id=TestResourceAvailability.RESOURCE_AVAILABILITY_ID,
-        resource_id=ResourceAvailabilityId.new_one(),
+        resource_id=ResourceId.new_one(),
         segment=TimeSlot.create_daily_time_slot_at_utc(2000, 1, 1),
     )
 
