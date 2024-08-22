@@ -23,7 +23,28 @@ class TestAvailabilityFacade:
 
         availability_facade.create_resource_slots(resource_id, one_day)
 
-        # TODO: check that availability(ies) was/were created
+        grouped = availability_facade.find(resource_id, one_day)
+        assert len(grouped) == 96
+
+    def test_creates_new_availability_slots_with_parent_id(
+        self, availability_facade: AvailabilityFacade
+    ) -> None:
+        resource_id = ResourceAvailabilityId.new_one()
+        resource_id2 = ResourceAvailabilityId.new_one()
+        parent_id = ResourceAvailabilityId.new_one()
+        different_parent_id = ResourceAvailabilityId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+
+        availability_facade.create_resource_slots(resource_id, one_day, parent_id)
+        availability_facade.create_resource_slots(
+            resource_id2, one_day, different_parent_id
+        )
+
+        assert len(availability_facade.find_by_parent_id(parent_id, one_day)) == 96
+        assert (
+            len(availability_facade.find_by_parent_id(different_parent_id, one_day))
+            == 96
+        )
 
     def test_blocks_availabilities(
         self, availability_facade: AvailabilityFacade
@@ -36,7 +57,9 @@ class TestAvailabilityFacade:
         result = availability_facade.block(resource_id, one_day, owner)
 
         assert result is True
-        # TODO: check that can't be taken
+        availabilities = availability_facade.find(resource_id, one_day)
+        assert len(availabilities) == 96
+        assert availabilities.blocked_entirely_by(owner)
 
     def test_disable_availabilities(
         self, availability_facade: AvailabilityFacade
@@ -49,7 +72,9 @@ class TestAvailabilityFacade:
         result = availability_facade.disable(resource_id, one_day, owner)
 
         assert result is True
-        # TODO: check that are disabled
+        availabilities = availability_facade.find(resource_id, one_day)
+        assert len(availabilities) == 96
+        assert availabilities.is_disabled_entirely_by(owner)
 
     def test_cannot_block_when_even_just_small_segment_of_requested_slot_is_blocked(
         self, availability_facade: AvailabilityFacade
@@ -61,10 +86,11 @@ class TestAvailabilityFacade:
         fifteen_minutes = TimeSlot(one_day.from_, one_day.from_ + timedelta(minutes=15))
         availability_facade.block(resource_id, fifteen_minutes, owner)
 
-        result = availability_facade.block(resource_id, one_day, owner)
+        result = availability_facade.block(resource_id, one_day, Owner.new_one())
 
         assert result is False
-        # TODO: check that nothing was changed
+        availabilities = availability_facade.find(resource_id, one_day)
+        availabilities.blocked_entirely_by(owner)
 
     def test_release_availability(
         self, availability_facade: AvailabilityFacade
@@ -76,10 +102,11 @@ class TestAvailabilityFacade:
         availability_facade.create_resource_slots(resource_id, fifteen_minutes)
         availability_facade.block(resource_id, fifteen_minutes, owner)
 
-        result = availability_facade.block(resource_id, one_day, owner)
+        result = availability_facade.release(resource_id, one_day, owner)
 
         assert result is True
-        # TODO: check can be taken again
+        availabilities = availability_facade.find(resource_id, one_day)
+        assert availabilities.is_entirely_available()
 
     def test_cant_release_when_just_part_of_slot_is_owned_by_another_requester(
         self, availability_facade: AvailabilityFacade
@@ -97,4 +124,25 @@ class TestAvailabilityFacade:
         result = availability_facade.release(resource_id, jan_1_2, jan_1_owner)
 
         assert result is False
-        # TODO: check still owned by jan1
+        availabilities = availability_facade.find(resource_id, jan_1)
+        assert availabilities.blocked_entirely_by(jan_1_owner)
+
+    def test_one_segment_can_taken_by_someone_else_after_releasing(
+        self, availability_facade: AvailabilityFacade
+    ) -> None:
+        resource_id = ResourceAvailabilityId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        fifteen_minutes = TimeSlot(one_day.from_, one_day.from_ + timedelta(minutes=15))
+        owner = Owner.new_one()
+        availability_facade.create_resource_slots(resource_id, one_day)
+        availability_facade.block(resource_id, one_day, owner)
+        availability_facade.release(resource_id, fifteen_minutes, owner)
+
+        new_requester = Owner.new_one()
+        result = availability_facade.block(resource_id, fifteen_minutes, new_requester)
+
+        assert result is True
+        availabilities = availability_facade.find(resource_id, one_day)
+        assert len(availabilities) == 96
+        assert len(availabilities.find_blocked_by(new_requester)) == 1
+        assert len(availabilities.find_blocked_by(owner)) == 95

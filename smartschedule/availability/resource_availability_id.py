@@ -6,11 +6,11 @@ from uuid import UUID, uuid4
 
 @dataclass(frozen=True)
 class ResourceAvailabilityId:
-    owner: UUID | None
+    id: UUID
 
     @staticmethod
     def none() -> ResourceAvailabilityId:
-        return ResourceAvailabilityId(None)
+        return ResourceAvailabilityId(UUID(int=0))
 
     @staticmethod
     def new_one() -> ResourceAvailabilityId:
