@@ -1,17 +1,10 @@
 from datetime import timedelta
 
-import pytest
-from lagom import Container
-
 from smartschedule.availability.availability_facade import AvailabilityFacade
+from smartschedule.availability.calendar import Calendar
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.timeslot.time_slot import TimeSlot
-
-
-@pytest.fixture()
-def availability_facade(container: Container) -> AvailabilityFacade:
-    return container.resolve(AvailabilityFacade)
 
 
 class TestAvailabilityFacade:
@@ -23,8 +16,9 @@ class TestAvailabilityFacade:
 
         availability_facade.create_resource_slots(resource_id, one_day)
 
-        grouped = availability_facade.find(resource_id, one_day)
-        assert len(grouped) == 96
+        entire_month = TimeSlot.create_monthly_time_slot_at_utc(2021, 1)
+        monthly_calendar = availability_facade.load_calendar(resource_id, entire_month)
+        assert monthly_calendar == Calendar.with_available_slots(resource_id, one_day)
 
     def test_creates_new_availability_slots_with_parent_id(
         self, availability_facade: AvailabilityFacade
@@ -57,9 +51,10 @@ class TestAvailabilityFacade:
         result = availability_facade.block(resource_id, one_day, owner)
 
         assert result is True
-        availabilities = availability_facade.find(resource_id, one_day)
-        assert len(availabilities) == 96
-        assert availabilities.blocked_entirely_by(owner)
+        entire_month = TimeSlot.create_monthly_time_slot_at_utc(2021, 1)
+        monthly_calendar = availability_facade.load_calendar(resource_id, entire_month)
+        assert len(monthly_calendar.available_slots()) == 0
+        assert monthly_calendar.taken_by(owner) == [one_day]
 
     def test_disable_availabilities(
         self, availability_facade: AvailabilityFacade
@@ -142,7 +137,10 @@ class TestAvailabilityFacade:
         result = availability_facade.block(resource_id, fifteen_minutes, new_requester)
 
         assert result is True
-        availabilities = availability_facade.find(resource_id, one_day)
-        assert len(availabilities) == 96
-        assert len(availabilities.find_blocked_by(new_requester)) == 1
-        assert len(availabilities.find_blocked_by(owner)) == 95
+        daily_calendar = availability_facade.load_calendar(resource_id, one_day)
+        assert len(daily_calendar.available_slots()) == 0
+        taken_by_owner = daily_calendar.taken_by(owner)
+        assert taken_by_owner == one_day.leftover_after_removing_common_with(
+            fifteen_minutes
+        )
+        assert daily_calendar.taken_by(new_requester) == [fifteen_minutes]
