@@ -6,7 +6,6 @@ from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.shared.capability.capability import Capability
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.planning.schedule.assertions.schedule_assert import (
     ScheduleAssert,
@@ -32,15 +31,15 @@ class TestSpecializedWaterfall:
         planning_facade.define_project_stages(
             project_id, stage_before_critical, critical_stage, stage_after_critical
         )
-        critical_resource_name = ResourceName("criticalResourceName")
+        critical_resource = ResourceId.new_one()
         critical_capability_availability = (
             self._resource_available_for_capability_in_period(
-                critical_resource_name, Capability.skill("JAVA"), self.JAN_1_6
+                critical_resource, Capability.skill("JAVA"), self.JAN_1_6
             )
         )
 
         planning_facade.plan_critical_stage_with_resource(
-            project_id, critical_stage, critical_resource_name, self.JAN_4_8
+            project_id, critical_stage, critical_resource, self.JAN_4_8
         )
 
         self._verify_resources_not_available(
@@ -48,7 +47,7 @@ class TestSpecializedWaterfall:
         )
 
         planning_facade.plan_critical_stage_with_resource(
-            project_id, critical_stage, critical_resource_name, self.JAN_1_6
+            project_id, critical_stage, critical_resource, self.JAN_1_6
         )
 
         self._assert_resources_available(project_id, critical_capability_availability)
@@ -73,6 +72,6 @@ class TestSpecializedWaterfall:
         pass
 
     def _resource_available_for_capability_in_period(
-        self, resource_name: ResourceName, capability: Capability, slot: TimeSlot
+        self, resource_id: ResourceId, capability: Capability, slot: TimeSlot
     ) -> ResourceId:
         return ResourceId.new_one()

@@ -3,6 +3,7 @@ from typing import Final
 
 import pytest
 
+from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
@@ -26,20 +27,28 @@ class TestRd:
 
     @pytest.mark.xfail(reason="Not implemented yet", strict=True)
     def test_research_and_development_project_process(
-        self, planning_facade: PlanningFacade
+        self,
+        planning_facade: PlanningFacade,
+        availability_facade: AvailabilityFacade,
     ) -> None:
         project_id = planning_facade.add_new_project("R&D")
         r1 = ResourceId.new_one()
         java_available_in_january = self._resource_available_for_capability_in_period(
-            r1, Capability.skill("JAVA"), self.JANUARY
+            r1, Capability.skill("JAVA"), self.JANUARY, availability_facade
         )
         r2 = ResourceId.new_one()
         php_available_in_february = self._resource_available_for_capability_in_period(
-            r2, Capability.skill("PHP"), self.FEBRUARY
+            r2,
+            Capability.skill("PHP"),
+            self.FEBRUARY,
+            availability_facade,
         )
         r3 = ResourceId.new_one()
         csharp_available_in_march = self._resource_available_for_capability_in_period(
-            r3, Capability.skill("CSHARP"), self.MARCH
+            r3,
+            Capability.skill("CSHARP"),
+            self.MARCH,
+            availability_facade,
         )
         all_resources = {r1, r2, r3}
 
@@ -81,9 +90,13 @@ class TestRd:
         self._assert_project_is_not_parallelized(loaded)
 
     def _resource_available_for_capability_in_period(
-        self, resource_id: ResourceId, capability: Capability, time_slot: TimeSlot
+        self,
+        resource_id: ResourceId,
+        capability: Capability,
+        time_slot: TimeSlot,
+        availability_facade: AvailabilityFacade,
     ) -> ResourceId:
-        # TODO
+        availability_facade.create_resource_slots(resource_id, time_slot)
         return ResourceId.new_one()
 
     def _assert_project_is_not_parallelized(self, project_card: ProjectCard) -> None:

@@ -19,7 +19,6 @@ from smartschedule.planning.project_card import ProjectCard
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.planning.project_repository import ProjectRepository
 from smartschedule.planning.schedule.schedule import Schedule
-from smartschedule.shared.resource_name import ResourceName
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -91,7 +90,7 @@ class PlanningFacade:
         self,
         project_id: ProjectId,
         critical_stage: Stage,
-        resource_name: ResourceName,
+        resource_id: ResourceId,
         stage_time_slot: TimeSlot,
     ) -> None:
         project = self._project_repository.get(id=project_id)
