@@ -12,6 +12,7 @@ from smartschedule.allocation.projects_allocations_summary import (
     ProjectsAllocationsSummary,
 )
 from smartschedule.availability.availability_facade import AvailabilityFacade
+from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -55,7 +56,10 @@ class AllocationFacade:
         capability: Capability,
         time_slot: TimeSlot,
     ) -> UUID | None:
-        # TODO: WHAT TO DO WITH AVAILABILITY HERE? - implement
+        owner = Owner(project_id.id)
+        # yes, one transaction crossing 2 modules.
+        if self._availability_facade.block(resource_id, time_slot, owner) is False:
+            return None
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.allocate(
             resource_id, capability, time_slot, datetime.now(tz=timezone.utc)
@@ -68,7 +72,7 @@ class AllocationFacade:
         allocatable_capability_id: UUID,
         time_slot: TimeSlot,
     ) -> bool:
-        # TODO: WHAT TO DO WITH AVAILABILITY HERE? - just think about it, don't implement
+        # TODO: WHAT TO DO WITH AVAILABILITY HERE?
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.release(
             allocatable_capability_id, time_slot, datetime.now(tz=timezone.utc)
