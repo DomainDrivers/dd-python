@@ -2,9 +2,9 @@
 modules:
   - path: smartschedule.allocation
     depends_on:
+      - path: smartschedule.availability
       - path: smartschedule.shared
       - path: smartschedule.simulation
-      - path: smartschedule.availability
   - path: smartschedule.availability
     depends_on:
       - path: smartschedule.shared
@@ -13,14 +13,17 @@ modules:
       - path: smartschedule.shared
   - path: smartschedule.planning
     depends_on:
-      - path: smartschedule.planning.parallelization
       - path: smartschedule.availability
+      - path: smartschedule.planning.parallelization
       - path: smartschedule.shared
   - path: smartschedule.planning.parallelization
     depends_on:
+      - path: smartschedule.availability
       - path: smartschedule.shared
       - path: smartschedule.sorter
-      - path: smartschedule.availability
+  - path: smartschedule.resource
+    depends_on:
+      - path: smartschedule.shared
   - path: smartschedule.shared
     depends_on: []
   - path: smartschedule.simulation
