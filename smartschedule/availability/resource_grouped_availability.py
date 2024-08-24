@@ -84,3 +84,6 @@ class ResourceGroupedAvailability:
             resource_availability.blocked_by().by_none()
             for resource_availability in self.resource_availabilities
         )
+
+    def has_no_slots(self) -> bool:
+        return len(self.resource_availabilities) == 0

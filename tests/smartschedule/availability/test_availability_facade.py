@@ -56,6 +56,17 @@ class TestAvailabilityFacade:
         assert len(monthly_calendar.available_slots()) == 0
         assert monthly_calendar.taken_by(owner) == [one_day]
 
+    def test_cant_block_when_no_slots_created(
+        self, availability_facade: AvailabilityFacade
+    ) -> None:
+        resource_id = ResourceId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner = Owner.new_one()
+
+        result = availability_facade.block(resource_id, one_day, owner)
+
+        assert result is False
+
     def test_disable_availabilities(
         self, availability_facade: AvailabilityFacade
     ) -> None:
@@ -70,6 +81,17 @@ class TestAvailabilityFacade:
         availabilities = availability_facade.find(resource_id, one_day)
         assert len(availabilities) == 96
         assert availabilities.is_disabled_entirely_by(owner)
+
+    def test_cant_disable_when_no_slots_created(
+        self, availability_facade: AvailabilityFacade
+    ) -> None:
+        resource_id = ResourceId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner = Owner.new_one()
+
+        result = availability_facade.disable(resource_id, one_day, owner)
+
+        assert result is False
 
     def test_cannot_block_when_even_just_small_segment_of_requested_slot_is_blocked(
         self, availability_facade: AvailabilityFacade
@@ -121,6 +143,17 @@ class TestAvailabilityFacade:
         assert result is False
         availabilities = availability_facade.find(resource_id, jan_1)
         assert availabilities.blocked_entirely_by(jan_1_owner)
+
+    def test_cant_release_when_no_slots_created(
+        self, availability_facade: AvailabilityFacade
+    ) -> None:
+        resource_id = ResourceId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner = Owner.new_one()
+
+        result = availability_facade.release(resource_id, one_day, owner)
+
+        assert result is False
 
     def test_one_segment_can_taken_by_someone_else_after_releasing(
         self, availability_facade: AvailabilityFacade
