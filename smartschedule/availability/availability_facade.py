@@ -43,6 +43,9 @@ class AvailabilityFacade:
         return self._block(to_block, requester)
 
     def _block(self, to_block: ResourceGroupedAvailability, requester: Owner) -> bool:
+        if to_block.has_no_slots():
+            return False
+
         result = to_block.block(requester)
         if result:
             return self._repository.save_checking_version(to_block)
@@ -53,6 +56,8 @@ class AvailabilityFacade:
         self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner
     ) -> bool:
         to_release = self._find_grouped(resource_id, time_slot)
+        if to_release.has_no_slots():
+            return False
         result = to_release.release(requester)
         if result:
             return self._repository.save_checking_version(to_release)
@@ -63,6 +68,9 @@ class AvailabilityFacade:
         self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner
     ) -> bool:
         to_disable = self._find_grouped(resource_id, time_slot)
+        if to_disable.has_no_slots():
+            return False
+
         result = to_disable.disable(requester)
         if result:
             return self._repository.save_checking_version(to_disable)

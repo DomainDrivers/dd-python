@@ -11,6 +11,7 @@ from smartschedule.allocation.project_allocations_repository import (
 from smartschedule.allocation.projects_allocations_summary import (
     ProjectsAllocationsSummary,
 )
+from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -18,9 +19,12 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 class AllocationFacade:
     def __init__(
-        self, project_allocations_repository: ProjectAllocationsRepository
+        self,
+        project_allocations_repository: ProjectAllocationsRepository,
+        availability_facade: AvailabilityFacade,
     ) -> None:
         self._project_allocations_repository = project_allocations_repository
+        self._availability_facade = availability_facade
 
     def create_allocation(
         self, time_slot: TimeSlot, scheduled_demands: Demands
@@ -51,6 +55,7 @@ class AllocationFacade:
         capability: Capability,
         time_slot: TimeSlot,
     ) -> UUID | None:
+        # TODO: WHAT TO DO WITH AVAILABILITY HERE? - implement
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.allocate(
             resource_id, capability, time_slot, datetime.now(tz=timezone.utc)
@@ -63,6 +68,7 @@ class AllocationFacade:
         allocatable_capability_id: UUID,
         time_slot: TimeSlot,
     ) -> bool:
+        # TODO: WHAT TO DO WITH AVAILABILITY HERE? - just think about it, don't implement
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.release(
             allocatable_capability_id, time_slot, datetime.now(tz=timezone.utc)
