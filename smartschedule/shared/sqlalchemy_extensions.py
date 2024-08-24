@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import TypeAdapter
 from sqlalchemy import Column, Dialect, select, types
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
@@ -60,7 +61,7 @@ class EmbeddedUUID[T: EmbeddableUUID](types.TypeDecorator[T]):
 class AsJSON[T](types.TypeDecorator[T]):
     """Will serialize to JSON and back everything that TypeAdapter handles."""
 
-    impl = types.JSON
+    impl = JSONB
     cache_ok = True
 
     _type_adapter: TypeAdapter[T]
@@ -124,6 +125,10 @@ class SQLAlchemyRepository[TModel, TIdentity]:
     def add(self, model: TModel) -> None:
         self._session.add(model)
         self._session.flush([model])
+
+    def add_all(self, models: Sequence[TModel]) -> None:
+        self._session.add_all(models)
+        self._session.flush(models)
 
     def get(self, id: TIdentity) -> TModel:
         stmt = select(self._type).filter(self._pk_col == id)

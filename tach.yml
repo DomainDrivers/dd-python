@@ -5,6 +5,10 @@ modules:
       - path: smartschedule.availability
       - path: smartschedule.shared
       - path: smartschedule.simulation
+  - path: smartschedule.allocation.capabilityscheduling
+    depends_on:
+      - path: smartschedule.shared
+      - path: smartschedule.availability
   - path: smartschedule.availability
     depends_on:
       - path: smartschedule.shared
