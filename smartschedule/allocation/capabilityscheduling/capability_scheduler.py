@@ -10,11 +10,11 @@ from smartschedule.allocation.capabilityscheduling.allocatable_capability_reposi
 from smartschedule.allocation.capabilityscheduling.allocatable_resource_id import (
     AllocatableResourceId,
 )
-from smartschedule.allocation.capabilityscheduling.capability_selector import (
-    CapabilitySelector,
-)
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import (
+    CapabilitySelector,
+)
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 

@@ -9,10 +9,10 @@ from smartschedule.allocation.capabilityscheduling.allocatable_capability_id imp
 from smartschedule.allocation.capabilityscheduling.allocatable_resource_id import (
     AllocatableResourceId,
 )
-from smartschedule.allocation.capabilityscheduling.capability_selector import (
+from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import (
     CapabilitySelector,
 )
-from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.sqlalchemy_extensions import AsJSON, EmbeddedUUID, registry
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 

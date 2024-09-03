@@ -17,7 +17,6 @@ from smartschedule.simulation.demands import Demands
 from smartschedule.simulation.project_id import ProjectId
 from smartschedule.simulation.simulation_facade import SimulationFacade
 from tests.smartschedule.simulation.available_capabilities_factory import (
-    AvailableResourceCapabilityFactory,
     SimulatedCapabilitiesFactory,
 )
 from tests.smartschedule.simulation.simulated_projects_factory import (
@@ -98,10 +97,10 @@ class TestSimulationScenarios:
         simulated_availability = SimulatedCapabilitiesFactory.build(
             num_capabilities=2,
             capabilities__0__resource_id=staszek_id,
-            capabilities__0__capability=Capability.skill("JAVA-MID"),
+            capabilities__0__brings=Capability.skill("JAVA-MID"),
             capabilities__0__time_slot=jan_1_time_slot,
             capabilities__1__resource_id=leon_id,
-            capabilities__1__capability=Capability.skill("JAVA-MID"),
+            capabilities__1__brings=Capability.skill("JAVA-MID"),
             capabilities__1__time_slot=jan_1_time_slot,
         )
 
@@ -131,10 +130,10 @@ class TestSimulationScenarios:
         simulated_availability = SimulatedCapabilitiesFactory.build(
             num_capabilities=2,
             capabilities__0__resource_id=uuid4(),
-            capabilities__0__capability=Capability.skill("JAVA-MID"),
+            capabilities__0__brings=Capability.skill("JAVA-MID"),
             capabilities__0__time_slot=jan_1_time_slot,
             capabilities__1__resource_id=uuid4(),
-            capabilities__1__capability=Capability.skill("JAVA-MID"),
+            capabilities__1__brings=Capability.skill("JAVA-MID"),
             capabilities__1__time_slot=jan_1_time_slot,
         )
 
@@ -181,11 +180,11 @@ class TestSimulationScenarios:
         simulated_availability = SimulatedCapabilitiesFactory.build(
             num_capabilities=1,
             capabilities__0__resource_id=staszek_id,
-            capabilities__0__capability=Capability.skill("YT DRAMA COMMENTS"),
+            capabilities__0__brings=Capability.skill("YT DRAMA COMMENTS"),
             capabilities__0__time_slot=jan_1_time_slot,
         )
 
-        extra_capability = AvailableResourceCapabilityFactory.build(
+        extra_capability = AvailableResourceCapability.with_capability(
             resource_id=uuid4(),
             capability=Capability.skill("YT DRAMA COMMENTS"),
             time_slot=jan_1_time_slot,
@@ -229,19 +228,19 @@ class TestSimulationScenarios:
         simulated_availability = SimulatedCapabilitiesFactory.build(
             num_capabilities=1,
             capabilities__0__resource_id=staszek_id,
-            capabilities__0__capability=Capability.skill("JAVA-MID"),
+            capabilities__0__brings=Capability.skill("JAVA-MID"),
             capabilities__0__time_slot=jan_1_time_slot,
         )
 
         slawek = AdditionalPricedCapability(
             Decimal(9999),
-            AvailableResourceCapability(
+            AvailableResourceCapability.with_capability(
                 uuid4(), Capability.skill("JAVA-MID"), jan_1_time_slot
             ),
         )
         staszek = AdditionalPricedCapability(
             Decimal(3),
-            AvailableResourceCapability(
+            AvailableResourceCapability.with_capability(
                 uuid4(), Capability.skill("JAVA-MID"), jan_1_time_slot
             ),
         )
@@ -257,3 +256,47 @@ class TestSimulationScenarios:
         assert buying_slawek_profit == -9959
         # We get 40 from project 2 and lose 3 for buying Staszek
         assert buying_staszek_profit == 37
+
+    def test_takes_into_account_simulation_capabilities(
+        self,
+        staszek_id: UUID,
+        simulation_facade: SimulationFacade,
+        jan_1_time_slot: TimeSlot,
+        project_1_id: ProjectId,
+        project_2_id: ProjectId,
+    ) -> None:
+        simulated_projects = [
+            SimulatedProjectFactory.build(
+                project_id=project_1_id,
+                value=Decimal(9),
+                missing_demands=Demands(
+                    [Demand.demand_for(Capability.skill("JAVA-MID"), jan_1_time_slot)]
+                ),
+            ),
+            SimulatedProjectFactory.build(
+                project_id=project_2_id,
+                value=Decimal(99),
+                missing_demands=Demands(
+                    [
+                        Demand.demand_for(Capability.skill("PYTHON"), jan_1_time_slot),
+                    ]
+                ),
+            ),
+        ]
+
+        simulated_availability = SimulatedCapabilitiesFactory.build(
+            num_capabilities=1,
+            capabilities__0__resource_id=staszek_id,
+            capabilities__0__brings={
+                Capability.skill("JAVA-MID"),
+                Capability.skill("PYTHON"),
+            },
+            capabilities__0__time_slot=jan_1_time_slot,
+        )
+
+        result = simulation_facade.what_is_the_optimal_setup(
+            simulated_projects, simulated_availability
+        )
+
+        assert result.profit == 99
+        assert len(result.chosen_items) == 1

@@ -1,9 +1,9 @@
 from typing import Final
 
-from smartschedule.allocation.capabilityscheduling.capability_selector import (
+from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import (
     CapabilitySelector,
 )
-from smartschedule.shared.capability.capability import Capability
 
 
 class TestCapabilitySelector:

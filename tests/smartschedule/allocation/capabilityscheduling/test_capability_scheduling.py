@@ -12,12 +12,12 @@ from smartschedule.allocation.capabilityscheduling.capability_finder import (
 from smartschedule.allocation.capabilityscheduling.capability_scheduler import (
     CapabilityScheduler,
 )
-from smartschedule.allocation.capabilityscheduling.capability_selector import (
-    CapabilitySelector,
-)
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import (
+    CapabilitySelector,
+)
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
