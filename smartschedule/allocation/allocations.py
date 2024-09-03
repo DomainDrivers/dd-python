@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from uuid import UUID
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -18,7 +20,9 @@ class Allocations:
     def add(self, allocated_capability: AllocatedCapability) -> Allocations:
         return Allocations(all=self.all.union({allocated_capability}))
 
-    def remove(self, to_remove: UUID, time_slot: TimeSlot) -> Allocations:
+    def remove(
+        self, to_remove: AllocatableCapabilityId, time_slot: TimeSlot
+    ) -> Allocations:
         allocated_capability = self.find(to_remove)
         if allocated_capability is None:
             return self
@@ -32,7 +36,7 @@ class Allocations:
         )
         leftovers: set[AllocatedCapability] = {
             AllocatedCapability(
-                allocated_capability.resource_id,
+                allocated_capability.allocated_capability_id,
                 allocated_capability.capability,
                 leftover,
             )
@@ -44,7 +48,9 @@ class Allocations:
             all=self.all.difference({allocated_capability}).union(leftovers)
         )
 
-    def find(self, allocated_capability_id: UUID) -> AllocatedCapability | None:
+    def find(
+        self, allocated_capability_id: AllocatableCapabilityId
+    ) -> AllocatedCapability | None:
         return next(
             (
                 allocation

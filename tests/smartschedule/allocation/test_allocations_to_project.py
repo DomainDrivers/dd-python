@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from typing import Final
-from uuid import uuid4
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from smartschedule.allocation.capability_released import CapabilityReleased
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocation_scheduled import (
@@ -16,7 +18,6 @@ from smartschedule.allocation.project_allocations_demands_scheduled import (
     ProjectAllocationsDemandsScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -24,7 +25,7 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 class TestAllocationsToProject:
     WHEN: Final = datetime.min
     PROJECT_ID: Final = ProjectAllocationsId.new_one()
-    ADMIN_ID: Final = ResourceId.new_one()
+    ADMIN_ID: Final = AllocatableCapabilityId.new_one()
     FEB_1: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 1)
     FEB_2: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 2)
     JANUARY: Final = TimeSlot.create_daily_time_slot_at_utc(2020, 1, 1)
@@ -127,9 +128,8 @@ class TestAllocationsToProject:
         )
         assert allocated_admin is not None
 
-        event = allocations.release(
-            allocated_admin.allocated_capability_id, self.FEB_1, self.WHEN
-        )
+        admin_id = AllocatableCapabilityId(allocated_admin.allocated_capability_id)
+        event = allocations.release(admin_id, self.FEB_1, self.WHEN)
 
         assert isinstance(event, CapabilityReleased)
         assert event == CapabilityReleased(
@@ -139,7 +139,9 @@ class TestAllocationsToProject:
     def test_releasing_has_no_effect_when_capability_was_not_allocated(self) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
 
-        event = allocations.release(uuid4(), self.FEB_1, self.WHEN)
+        event = allocations.release(
+            AllocatableCapabilityId.new_one(), self.FEB_1, self.WHEN
+        )
 
         assert event is None
 
@@ -152,7 +154,10 @@ class TestAllocationsToProject:
             self.PROJECT_ID, Demands.of(demand_for_admin, demand_for_java)
         )
         allocated_admin = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            AllocatableCapabilityId.new_one(),
+            Capability.permission("admin"),
+            self.FEB_1,
+            self.WHEN,
         )
         assert allocated_admin is not None
         allocations.allocate(
@@ -160,7 +165,9 @@ class TestAllocationsToProject:
         )
 
         event = allocations.release(
-            allocated_admin.allocated_capability_id, self.FEB_1, self.WHEN
+            AllocatableCapabilityId(allocated_admin.allocated_capability_id),
+            self.FEB_1,
+            self.WHEN,
         )
 
         assert isinstance(event, CapabilityReleased)
@@ -178,7 +185,9 @@ class TestAllocationsToProject:
         assert allocated_admin is not None
 
         event = allocations.release(
-            allocated_admin.allocated_capability_id, self.FEB_2, self.WHEN
+            AllocatableCapabilityId(allocated_admin.allocated_capability_id),
+            self.FEB_2,
+            self.WHEN,
         )
 
         assert event is None
@@ -199,7 +208,9 @@ class TestAllocationsToProject:
         the_rest = TimeSlot(self.FEB_1.from_ + timedelta(hours=2), self.FEB_1.to)
 
         event = allocations.release(
-            allocated_admin.allocated_capability_id, fifteen_minutes_in_1_feb, self.WHEN
+            AllocatableCapabilityId(allocated_admin.allocated_capability_id),
+            fifteen_minutes_in_1_feb,
+            self.WHEN,
         )
 
         assert isinstance(event, CapabilityReleased)
@@ -208,10 +219,10 @@ class TestAllocationsToProject:
         )
         assert allocations.allocations.all == {
             AllocatedCapability(
-                self.ADMIN_ID.id, Capability.permission("admin"), one_hour_before
+                self.ADMIN_ID, Capability.permission("admin"), one_hour_before
             ),
             AllocatedCapability(
-                self.ADMIN_ID.id, Capability.permission("admin"), the_rest
+                self.ADMIN_ID, Capability.permission("admin"), the_rest
             ),
         }
 

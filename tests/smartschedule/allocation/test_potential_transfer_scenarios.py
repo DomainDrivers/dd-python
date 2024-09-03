@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from uuid import uuid4
 
 import pytest
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
@@ -66,7 +68,9 @@ def insurance_soft_id() -> ProjectAllocationsId:
 
 @pytest.fixture()
 def staszek_java_mid(jan_1: TimeSlot) -> AllocatedCapability:
-    return AllocatedCapability(uuid4(), Capability.skill("JAVA-MID"), jan_1)
+    return AllocatedCapability(
+        AllocatableCapabilityId.new_one(), Capability.skill("JAVA-MID"), jan_1
+    )
 
 
 @pytest.fixture()
