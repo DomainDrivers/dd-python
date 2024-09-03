@@ -6,7 +6,9 @@ from smartschedule.allocation.capabilityscheduling.allocatable_capability_id imp
 from smartschedule.allocation.capabilityscheduling.allocatable_resource_id import (
     AllocatableResourceId,
 )
-from smartschedule.shared.capability.capability import Capability
+from smartschedule.allocation.capabilityscheduling.capability_selector import (
+    CapabilitySelector,
+)
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -14,5 +16,5 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 class AllocatableCapabilitySummary:
     id: AllocatableCapabilityId
     allocatable_resource_id: AllocatableResourceId
-    capability: Capability
+    capabilities: CapabilitySelector
     time_slot: TimeSlot

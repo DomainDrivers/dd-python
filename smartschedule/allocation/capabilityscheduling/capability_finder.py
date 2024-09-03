@@ -76,7 +76,7 @@ class CapabilityFinder:
             AllocatableCapabilitySummary(
                 allocatable_capability.id,
                 allocatable_capability.resource_id,
-                allocatable_capability.capability,
+                allocatable_capability.possible_capabilities,
                 allocatable_capability.time_slot,
             )
             for allocatable_capability in found

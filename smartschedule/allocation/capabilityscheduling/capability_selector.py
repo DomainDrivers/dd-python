@@ -26,6 +26,10 @@ class CapabilitySelector:
     def can_perform_one_of(capabilities: set[Capability]) -> CapabilitySelector:
         return CapabilitySelector(capabilities, SelectingPolicy.ONE_OF_ALL)
 
+    @staticmethod
+    def can_just_perform(capability: Capability) -> CapabilitySelector:
+        return CapabilitySelector({capability}, SelectingPolicy.ONE_OF_ALL)
+
     def can_perform(self, *capabilities: Capability) -> bool:
         if len(capabilities) == 1:
             return capabilities[0] in self.capabilities
