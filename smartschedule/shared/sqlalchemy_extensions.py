@@ -143,3 +143,7 @@ class SQLAlchemyRepository[TModel, TIdentity]:
             stmt = stmt.filter(self._pk_col.in_(ids))
 
         return self._session.execute(stmt).scalars().all()
+
+    def exists(self, id: TIdentity) -> bool:
+        stmt = select(self._pk_col).filter(self._pk_col == id).exists()
+        return self._session.execute(select(stmt)).scalar() or False

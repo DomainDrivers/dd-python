@@ -50,6 +50,9 @@ class CapabilityFinder:
         found = self._repository.get_all(allocatable_capability_ids)
         return self._create_summary(list(found))
 
+    def is_present(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
+        return self._repository.exists(allocatable_capability_id)
+
     def _filter_availability_in_time_slot(
         self, allocatable_capabilities: list[AllocatableCapability], time_slot: TimeSlot
     ) -> list[AllocatableCapability]:

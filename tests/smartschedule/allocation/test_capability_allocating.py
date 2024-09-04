@@ -67,6 +67,22 @@ class AvailabilityAssert:
             for calendar in calendars.calendars.values()
         )
 
+    def assert_availability_is_released(
+        self,
+        time_slot: TimeSlot,
+        allocatable_capability_id: AllocatableCapabilityId,
+        project_id: ProjectAllocationsId,
+    ) -> None:
+        __tracebackhide__ = True
+
+        owner = Owner(project_id.id)
+        calendars = self._availability_facade.load_calendars(
+            {allocatable_capability_id.to_availability_resource_id()}, time_slot
+        )
+        assert all(
+            calendar.taken_by(owner) == [] for calendar in calendars.calendars.values()
+        )
+
 
 @pytest.fixture()
 def availability_assert(availability_facade: AvailabilityFacade) -> AvailabilityAssert:
@@ -142,10 +158,32 @@ class TestCapabilityAllocating:
         summary = allocation_facade.find_all_projects_allocations()
         assert summary.project_allocations[project_id].all == set()
 
-    def test_release_capability_for_the_project(
+    def test_cant_allocate_when_capability_has_not_been_scheduled(
+        self,
+        allocation_facade: AllocationFacade,
+    ) -> None:
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        skill_java = Capability.skill("JAVA")
+        demand = Demand(skill_java, one_day)
+        not_scheduled_capability = AllocatableCapabilityId.new_one()
+        project_id = ProjectAllocationsId.new_one()
+        allocation_facade.schedule_project_allocations_demands(
+            project_id, Demands.of(demand)
+        )
+
+        result = allocation_facade.allocate_to_project(
+            project_id, not_scheduled_capability, skill_java, one_day
+        )
+
+        assert result is None
+        summary = allocation_facade.find_all_projects_allocations()
+        assert len(summary.project_allocations[project_id].all) == 0
+
+    def test_release_capability_from_the_project(
         self,
         allocation_facade: AllocationFacade,
         allocatable_resource_factory: AllocatableResourceFactory,
+        availability_assert: AvailabilityAssert,
     ) -> None:
         one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         allocatable_resource_id = allocatable_resource_factory(
@@ -168,3 +206,6 @@ class TestCapabilityAllocating:
         assert result is True
         summary = allocation_facade.find_all_projects_allocations()
         assert len(summary.project_allocations[project_id].all) == 0
+        availability_assert.assert_availability_is_released(
+            one_day, allocatable_resource_id, project_id
+        )

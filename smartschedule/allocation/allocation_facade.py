@@ -5,6 +5,9 @@ from smartschedule.allocation.allocations import Allocations
 from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
+from smartschedule.allocation.capabilityscheduling.capability_finder import (
+    CapabilityFinder,
+)
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocations import ProjectAllocations
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
@@ -25,9 +28,11 @@ class AllocationFacade:
         self,
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
+        capability_finder: CapabilityFinder,
     ) -> None:
         self._project_allocations_repository = project_allocations_repository
         self._availability_facade = availability_facade
+        self._capability_finder = capability_finder
 
     def create_allocation(
         self, time_slot: TimeSlot, scheduled_demands: Demands
@@ -54,22 +59,29 @@ class AllocationFacade:
     def allocate_to_project(
         self,
         project_id: ProjectAllocationsId,
-        resource_id: AllocatableCapabilityId,
+        allocatable_capability_id: AllocatableCapabilityId,
         capability: Capability,
         time_slot: TimeSlot,
     ) -> UUID | None:
         owner = Owner(project_id.id)
         # yes, one transaction crossing 2 modules.
+        if not self._capability_finder.is_present(allocatable_capability_id):
+            return None
         if (
             self._availability_facade.block(
-                resource_id.to_availability_resource_id(), time_slot, owner
+                allocatable_capability_id.to_availability_resource_id(),
+                time_slot,
+                owner,
             )
             is False
         ):
             return None
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.allocate(
-            resource_id, capability, time_slot, datetime.now(tz=timezone.utc)
+            allocatable_capability_id,
+            capability,
+            time_slot,
+            datetime.now(tz=timezone.utc),
         )
         return event.allocated_capability_id if event is not None else None
 
@@ -79,7 +91,13 @@ class AllocationFacade:
         allocatable_capability_id: AllocatableCapabilityId,
         time_slot: TimeSlot,
     ) -> bool:
-        # TODO: WHAT TO DO WITH AVAILABILITY HERE?
+        # can release not scheduled capability - at least for now.
+        # Hence no check to CapabilityFinder
+        self._availability_facade.release(
+            allocatable_capability_id.to_availability_resource_id(),
+            time_slot,
+            Owner(project_id.id),
+        )
         allocations = self._project_allocations_repository.get(project_id)
         event = allocations.release(
             allocatable_capability_id, time_slot, datetime.now(tz=timezone.utc)
