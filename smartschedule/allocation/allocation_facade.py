@@ -2,6 +2,10 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from smartschedule.allocation.allocations import Allocations
+from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
+from smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summary import (
+    AllocatableCapabilitiesSummary,
+)
 from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
@@ -19,6 +23,7 @@ from smartschedule.allocation.projects_allocations_summary import (
 )
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.owner import Owner
+from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -76,14 +81,44 @@ class AllocationFacade:
             is False
         ):
             return None
+
+        event = self._allocate(
+            project_id, allocatable_capability_id, capability, time_slot
+        )
+        return event.allocated_capability_id if event is not None else None
+
+    def allocate_capability_to_project_for_period(
+        self,
+        project_id: ProjectAllocationsId,
+        capability: Capability,
+        time_slot: TimeSlot,
+    ) -> bool:
+        return False
+
+    def _allocate(
+        self,
+        project_id: ProjectAllocationsId,
+        allocatable_capability_id: AllocatableCapabilityId,
+        capability: Capability,
+        time_slot: TimeSlot,
+    ) -> CapabilitiesAllocated | None:
         allocations = self._project_allocations_repository.get(project_id)
-        event = allocations.allocate(
+        return allocations.allocate(
             allocatable_capability_id,
             capability,
             time_slot,
             datetime.now(tz=timezone.utc),
         )
-        return event.allocated_capability_id if event is not None else None
+
+    def _find_chosen_allocatable_capability(
+        self, proposed_capabilities: AllocatableCapabilitiesSummary, chosen: ResourceId
+    ) -> AllocatableCapabilityId | None:
+        matching = [
+            ac.id
+            for ac in proposed_capabilities.all
+            if ac.id.to_availability_resource_id() == chosen
+        ]
+        return next(iter(matching), None)
 
     def release_from_project(
         self,
