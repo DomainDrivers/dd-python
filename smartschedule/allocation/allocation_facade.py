@@ -93,7 +93,30 @@ class AllocationFacade:
         capability: Capability,
         time_slot: TimeSlot,
     ) -> bool:
-        return False
+        proposed_capabilities = self._capability_finder.find_capabilities(
+            capability, time_slot
+        )
+        if not proposed_capabilities.all:
+            return False
+
+        availability_resource_ids = {
+            resource.id.to_availability_resource_id()
+            for resource in proposed_capabilities.all
+        }
+        chosen = self._availability_facade.block_random_available(
+            availability_resource_ids, time_slot, Owner(project_id.id)
+        )
+        if not chosen:
+            return False
+
+        to_allocate = self._find_chosen_allocatable_capability(
+            proposed_capabilities, chosen
+        )
+        if not to_allocate:
+            return False
+
+        allocated_event = self._allocate(project_id, to_allocate, capability, time_slot)
+        return allocated_event is not None
 
     def _allocate(
         self,

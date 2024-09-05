@@ -123,7 +123,7 @@ class ResourceAvailabilityRepository:
         return all(results)
 
     def load_availabilities_of_random_resources_within(
-        self, normalized: TimeSlot, *resource_ids: ResourceAvailabilityId
+        self, normalized: TimeSlot, *resource_ids: ResourceId
     ) -> ResourceGroupedAvailability:
         available_resources = (
             select(availabilities.c.resource_id)

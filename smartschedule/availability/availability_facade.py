@@ -77,6 +77,22 @@ class AvailabilityFacade:
         else:
             return False
 
+    def block_random_available(
+        self, resource_ids: set[ResourceId], within: TimeSlot, owner: Owner
+    ) -> ResourceId | None:
+        normalized = segments.normalize_to_segment_boundaries(
+            within, SegmentInMinutes.default_segment()
+        )
+        grouped_availability = (
+            self._repository.load_availabilities_of_random_resources_within(
+                normalized, *resource_ids
+            )
+        )
+        if self._block(grouped_availability, owner):
+            return grouped_availability.resource_id
+        else:
+            return None
+
     def _find_grouped(
         self, resource_id: ResourceId, within: TimeSlot
     ) -> ResourceGroupedAvailability:
