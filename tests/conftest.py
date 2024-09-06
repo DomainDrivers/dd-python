@@ -7,6 +7,9 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
+from smartschedule.allocation.capabilityscheduling.capability_finder import (
+    CapabilityFinder,
+)
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.shared.sqlalchemy_extensions import registry
 
@@ -57,3 +60,8 @@ def container(session: Session) -> Container:
 @pytest.fixture()
 def availability_facade(container: Container) -> AvailabilityFacade:
     return container.resolve(AvailabilityFacade)
+
+
+@pytest.fixture()
+def capability_finder(container: Container) -> CapabilityFinder:
+    return container.resolve(CapabilityFinder)

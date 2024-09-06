@@ -1,14 +1,6 @@
-import pytest
-from lagom import Container
-
 from smartschedule.resource.employee.employee_facade import EmployeeFacade
 from smartschedule.resource.employee.seniority import Seniority
 from smartschedule.shared.capability.capability import Capability
-
-
-@pytest.fixture()
-def employee_facade(container: Container) -> EmployeeFacade:
-    return container.resolve(EmployeeFacade)
 
 
 class TestCreatingEmployee:

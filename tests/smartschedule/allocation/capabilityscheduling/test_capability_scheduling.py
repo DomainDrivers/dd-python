@@ -26,11 +26,6 @@ def capability_scheduler(container: Container) -> CapabilityScheduler:
     return container.resolve(CapabilityScheduler)
 
 
-@pytest.fixture()
-def capability_finder(container: Container) -> CapabilityFinder:
-    return container.resolve(CapabilityFinder)
-
-
 class AvailabilityAssert:
     def __init__(self, availability_facade: AvailabilityFacade) -> None:
         self._facade = availability_facade

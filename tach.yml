@@ -38,11 +38,11 @@ modules:
   - path: smartschedule.resource.device
     depends_on:
       - path: smartschedule.shared
-      - path: smartschedule.allocation
+      - path: smartschedule.allocation.capabilityscheduling
   - path: smartschedule.resource.employee
     depends_on:
       - path: smartschedule.shared
-      - path: smartschedule.allocation
+      - path: smartschedule.allocation.capabilityscheduling
   - path: smartschedule.shared
     depends_on: []
   - path: smartschedule.simulation
