@@ -7,6 +7,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
+from smartschedule import container as container_module
 from smartschedule.allocation.capabilityscheduling.capability_finder import (
     CapabilityFinder,
 )
@@ -52,7 +53,7 @@ def session(session_factory: Callable[[], Session]) -> Iterator[Session]:
 
 @pytest.fixture()
 def container(session: Session) -> Container:
-    container = Container()
+    container = container_module.build()
     container[Session] = session
     return container
 

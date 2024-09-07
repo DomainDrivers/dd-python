@@ -12,9 +12,12 @@ modules:
       - path: smartschedule.shared
   - path: smartschedule.allocation.capabilityscheduling.legacyacl
     depends_on:
-      - path: smartschedule.shared
       - path: smartschedule.allocation.capabilityscheduling
+      - path: smartschedule.shared
   - path: smartschedule.availability
+    depends_on:
+      - path: smartschedule.shared
+  - path: smartschedule.container
     depends_on:
       - path: smartschedule.shared
   - path: smartschedule.optimization
@@ -33,17 +36,17 @@ modules:
       - path: smartschedule.sorter
   - path: smartschedule.resource
     depends_on:
-      - path: smartschedule.shared
       - path: smartschedule.resource.device
       - path: smartschedule.resource.employee
+      - path: smartschedule.shared
   - path: smartschedule.resource.device
     depends_on:
-      - path: smartschedule.shared
       - path: smartschedule.allocation.capabilityscheduling
+      - path: smartschedule.shared
   - path: smartschedule.resource.employee
     depends_on:
-      - path: smartschedule.shared
       - path: smartschedule.allocation.capabilityscheduling
+      - path: smartschedule.shared
   - path: smartschedule.shared
     depends_on: []
   - path: smartschedule.simulation
