@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Final
 
-import pytest
-
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.shared.timeslot.time_slot import TimeSlot
@@ -16,7 +14,6 @@ class TestTimeCriticalWaterfall:
     JAN_1_3: Final = TimeSlot(datetime(2020, 1, 1), datetime(2020, 1, 3))
     JAN_1_4: Final = TimeSlot(datetime(2020, 1, 1), datetime(2020, 1, 4))
 
-    @pytest.mark.skip("Not implemented yet")
     def test_time_critical_waterfall_project_process(
         self, planning_facade: PlanningFacade
     ) -> None:
