@@ -125,7 +125,8 @@ class PlanningFacade:
         return self._to_project_card(project)
 
     def load_all(self, *project_ids: ProjectId) -> list[ProjectCard]:
-        projects = self._project_repository.get_all(ids=list(project_ids))
+        ids = None if not project_ids else list(project_ids)
+        projects = self._project_repository.get_all(ids=ids)
         return [self._to_project_card(project) for project in projects]
 
     def _to_project_card(self, project: Project) -> ProjectCard:

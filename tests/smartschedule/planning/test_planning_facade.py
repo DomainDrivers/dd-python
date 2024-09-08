@@ -1,8 +1,6 @@
 from datetime import date, datetime, timedelta
 from typing import Any
 
-import pytest
-from lagom import Container
 from mockito import verify  # type: ignore
 from mockito.matchers import arg_that  # type: ignore
 
@@ -18,11 +16,6 @@ from smartschedule.planning.schedule.schedule import Schedule
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.event_bus import EventBus
 from smartschedule.shared.timeslot.time_slot import TimeSlot
-
-
-@pytest.fixture()
-def planning_facade(container: Container) -> PlanningFacade:
-    return container.resolve(PlanningFacade)
 
 
 class TestPlanningFacade:

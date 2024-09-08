@@ -25,6 +25,7 @@ types-python-dateutil = "*"
 testcontainers = {version = "*", extras = ["postgres"]}
 mockito = "*"
 pytest-mockito = "*"
+time-machine = "*"
 
 [build-system]
 requires = ["poetry-core"]

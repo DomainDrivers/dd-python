@@ -8,10 +8,14 @@ from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
 from smartschedule import container as container_module
+from smartschedule.allocation.allocation_facade import AllocationFacade
 from smartschedule.allocation.capabilityscheduling.capability_finder import (
     CapabilityFinder,
 )
+from smartschedule.allocation.cashflow.cash_flow_facade import CashFlowFacade
 from smartschedule.availability.availability_facade import AvailabilityFacade
+from smartschedule.planning.planning_facade import PlanningFacade
+from smartschedule.resource.employee.employee_facade import EmployeeFacade
 from smartschedule.shared.sqlalchemy_extensions import registry
 
 
@@ -66,3 +70,23 @@ def availability_facade(container: Container) -> AvailabilityFacade:
 @pytest.fixture()
 def capability_finder(container: Container) -> CapabilityFinder:
     return container.resolve(CapabilityFinder)
+
+
+@pytest.fixture()
+def employee_facade(container: Container) -> EmployeeFacade:
+    return container.resolve(EmployeeFacade)
+
+
+@pytest.fixture()
+def planning_facade(container: Container) -> PlanningFacade:
+    return container.resolve(PlanningFacade)
+
+
+@pytest.fixture()
+def allocation_facade(container: Container) -> AllocationFacade:
+    return container.resolve(AllocationFacade)
+
+
+@pytest.fixture()
+def cash_flow_facade(container: Container) -> CashFlowFacade:
+    return container.resolve(CashFlowFacade)

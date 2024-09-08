@@ -47,6 +47,15 @@ modules:
     depends_on:
       - path: smartschedule.allocation.capabilityscheduling
       - path: smartschedule.shared
+  - path: smartschedule.risk
+    depends_on:
+      - path: smartschedule.shared
+      - path: smartschedule.planning
+      - path: smartschedule.availability
+      - path: smartschedule.simulation
+      - path: smartschedule.allocation
+      - path: smartschedule.allocation.capabilityscheduling
+      - path: smartschedule.resource
   - path: smartschedule.shared
     depends_on: []
   - path: smartschedule.simulation

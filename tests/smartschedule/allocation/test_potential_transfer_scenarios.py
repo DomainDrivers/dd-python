@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from lagom import Container
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
 from smartschedule.allocation.allocations import Allocations
@@ -20,11 +21,9 @@ from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.allocation.projects_allocations_summary import (
     ProjectsAllocationsSummary,
 )
-from smartschedule.optimization.optimization_facade import OptimizationFacade
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.timeslot.time_slot import TimeSlot
-from smartschedule.simulation.simulation_facade import SimulationFacade
 
 
 @pytest.fixture()
@@ -78,8 +77,8 @@ def staszek_java_mid(jan_1: TimeSlot) -> AllocatedCapability:
 
 
 @pytest.fixture()
-def potential_transfers_service() -> PotentialTransfersService:
-    return PotentialTransfersService(SimulationFacade(OptimizationFacade()))
+def potential_transfers_service(container: Container) -> PotentialTransfersService:
+    return container.resolve(PotentialTransfersService)
 
 
 class TestPotentialTransferScenarios:

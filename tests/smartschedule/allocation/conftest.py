@@ -3,7 +3,6 @@ from typing import Callable, TypeAlias
 import pytest
 from lagom import Container
 
-from smartschedule.allocation.allocation_facade import AllocationFacade
 from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
@@ -18,12 +17,6 @@ from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.allocation.availability_assert import AvailabilityAssert
-
-
-@pytest.fixture()
-def allocation_facade(container: Container) -> AllocationFacade:
-    return container.resolve(AllocationFacade)
-
 
 AllocatableResourceFactory: TypeAlias = Callable[
     [TimeSlot, Capability, AllocatableResourceId], AllocatableCapabilityId

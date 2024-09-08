@@ -36,3 +36,7 @@ class CashFlowFacade:
     def find(self, project_id: ProjectAllocationsId) -> Earnings:
         cashflow = self._cash_flow_repository.get(project_id)
         return cashflow.earnings
+
+    def find_all(self) -> dict[ProjectAllocationsId, Earnings]:
+        cashflows = self._cash_flow_repository.get_all()
+        return {cashflow.project_id: cashflow.earnings for cashflow in cashflows}

@@ -1,7 +1,5 @@
 from typing import Any
 
-import pytest
-from lagom import Container
 from mockito import verify  # type: ignore
 from mockito.matchers import arg_that  # type: ignore
 
@@ -12,11 +10,6 @@ from smartschedule.allocation.cashflow.earnings_recalculated import EarningsReca
 from smartschedule.allocation.cashflow.income import Income
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.shared.event_bus import EventBus
-
-
-@pytest.fixture()
-def cash_flow_facade(container: Container) -> CashFlowFacade:
-    return container.resolve(CashFlowFacade)
 
 
 class TestCashFlowFacade:
