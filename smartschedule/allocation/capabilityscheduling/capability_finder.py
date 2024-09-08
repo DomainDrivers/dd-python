@@ -34,7 +34,7 @@ class CapabilityFinder:
             capability.name, capability.type, time_slot.from_, time_slot.to
         )
         found = self._filter_availability_in_time_slot(found, time_slot)
-        return self._create_summary(found)
+        return self._create_summary(*found)
 
     def find_capabilities(
         self, capability: Capability, time_slot: TimeSlot
@@ -42,16 +42,13 @@ class CapabilityFinder:
         found = self._repository.find_by_capability_within(
             capability.name, capability.type, time_slot.from_, time_slot.to
         )
-        return self._create_summary(found)
+        return self._create_summary(*found)
 
     def find_by_id(
-        self, allocatable_capability_ids: list[AllocatableCapabilityId]
+        self, *allocatable_capability_ids: AllocatableCapabilityId
     ) -> AllocatableCapabilitiesSummary:
-        found = self._repository.get_all(allocatable_capability_ids)
-        return self._create_summary(list(found))
-
-    def is_present(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
-        return self._repository.exists(allocatable_capability_id)
+        found = self._repository.get_all(list(allocatable_capability_ids))
+        return self._create_summary(*list(found))
 
     def _filter_availability_in_time_slot(
         self, allocatable_capabilities: list[AllocatableCapability], time_slot: TimeSlot
@@ -73,7 +70,7 @@ class CapabilityFinder:
         ]
 
     def _create_summary(
-        self, found: list[AllocatableCapability]
+        self, *found: AllocatableCapability
     ) -> AllocatableCapabilitiesSummary:
         summaries = [
             AllocatableCapabilitySummary(

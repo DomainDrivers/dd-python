@@ -19,6 +19,7 @@ from smartschedule.allocation.project_allocations_demands_scheduled import (
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -35,7 +36,10 @@ class TestAllocationsToProject:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
 
         event = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         assert isinstance(event, CapabilitiesAllocated)
@@ -53,7 +57,10 @@ class TestAllocationsToProject:
         )
 
         event = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         assert event is None
@@ -61,11 +68,17 @@ class TestAllocationsToProject:
     def test_allocating_has_no_effect_when_capability_already_allocated(self) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
         allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         event = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         assert event is None
@@ -77,11 +90,17 @@ class TestAllocationsToProject:
         )
         allocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
         allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         event = allocations.allocate(
-            self.ADMIN_ID, Capability.skill("java"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.skill("java")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         assert isinstance(event, CapabilitiesAllocated)
@@ -102,11 +121,17 @@ class TestAllocationsToProject:
         )
         allocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
         allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         event = allocations.allocate(
-            self.ADMIN_ID, Capability.skill("java"), self.FEB_2, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.skill("java")),
+            self.FEB_2,
+            self.WHEN,
         )
 
         assert isinstance(event, CapabilitiesAllocated)
@@ -124,7 +149,10 @@ class TestAllocationsToProject:
     def test_release(self) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
         allocated_admin = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
         assert allocated_admin is not None
 
@@ -155,13 +183,16 @@ class TestAllocationsToProject:
         )
         allocated_admin = allocations.allocate(
             AllocatableCapabilityId.new_one(),
-            Capability.permission("admin"),
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
             self.FEB_1,
             self.WHEN,
         )
         assert allocated_admin is not None
         allocations.allocate(
-            self.ADMIN_ID, Capability.skill("java"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.skill("java")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         event = allocations.release(
@@ -180,7 +211,10 @@ class TestAllocationsToProject:
     ) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
         allocated_admin = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
         assert allocated_admin is not None
 
@@ -195,7 +229,10 @@ class TestAllocationsToProject:
     def test_releasing_small_part_of_slot_leaves_the_rest(self) -> None:
         allocations = ProjectAllocations.empty(self.PROJECT_ID)
         allocated_admin = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("admin"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("admin")),
+            self.FEB_1,
+            self.WHEN,
         )
         assert allocated_admin is not None
 
@@ -219,10 +256,14 @@ class TestAllocationsToProject:
         )
         assert allocations.allocations.all == {
             AllocatedCapability(
-                self.ADMIN_ID, Capability.permission("admin"), one_hour_before
+                self.ADMIN_ID,
+                CapabilitySelector.can_just_perform(Capability.permission("admin")),
+                one_hour_before,
             ),
             AllocatedCapability(
-                self.ADMIN_ID, Capability.permission("admin"), the_rest
+                self.ADMIN_ID,
+                CapabilitySelector.can_just_perform(Capability.permission("admin")),
+                the_rest,
             ),
         }
 
@@ -233,7 +274,10 @@ class TestAllocationsToProject:
         allocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
 
         allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("ADMIN")),
+            self.FEB_1,
+            self.WHEN,
         )
 
         python_skill = Demand(Capability.skill("PYTHON"), self.FEB_1)

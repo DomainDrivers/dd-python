@@ -22,6 +22,7 @@ from smartschedule.allocation.projects_allocations_summary import (
 )
 from smartschedule.optimization.optimization_facade import OptimizationFacade
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from smartschedule.simulation.simulation_facade import SimulationFacade
 
@@ -68,8 +69,11 @@ def insurance_soft_id() -> ProjectAllocationsId:
 
 @pytest.fixture()
 def staszek_java_mid(jan_1: TimeSlot) -> AllocatedCapability:
+    java_skill = Capability.skill("JAVA-MID")
     return AllocatedCapability(
-        AllocatableCapabilityId.new_one(), Capability.skill("JAVA-MID"), jan_1
+        AllocatableCapabilityId.new_one(),
+        CapabilitySelector.can_just_perform(java_skill),
+        jan_1,
     )
 
 

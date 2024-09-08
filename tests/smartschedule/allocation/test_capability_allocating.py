@@ -108,10 +108,10 @@ class TestCapabilityAllocating:
             one_day, Demands.of(Demand(debugging, one_day))
         )
         self._allocation_facade.allocate_to_project(
-            project_1, allocatable_capability_1, debugging, one_day
+            project_1, allocatable_capability_1, one_day
         )
         self._allocation_facade.allocate_to_project(
-            project_2, allocatable_capability_2, debugging, one_day
+            project_2, allocatable_capability_2, one_day
         )
         project_id = ProjectAllocationsId.new_one()
         self._allocation_facade.schedule_project_allocations_demands(

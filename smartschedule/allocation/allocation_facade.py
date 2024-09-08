@@ -9,6 +9,9 @@ from smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summ
 from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_summary import (
+    AllocatableCapabilitySummary,
+)
 from smartschedule.allocation.capabilityscheduling.capability_finder import (
     CapabilityFinder,
 )
@@ -28,6 +31,7 @@ from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.events_publisher import EventsPublisher
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -74,25 +78,26 @@ class AllocationFacade:
         self,
         project_id: ProjectAllocationsId,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
+        # capability: Capability,  # NIE MA TEGO JUSH
         time_slot: TimeSlot,
     ) -> UUID | None:
-        owner = Owner(project_id.id)
         # yes, one transaction crossing 2 modules.
-        if not self._capability_finder.is_present(allocatable_capability_id):
+        capabilities = self._capability_finder.find_by_id(allocatable_capability_id)
+        capability = next(iter(capabilities.all), None)
+        if capability is None:
             return None
-        if (
+
+        if not (
             self._availability_facade.block(
                 allocatable_capability_id.to_availability_resource_id(),
                 time_slot,
-                owner,
+                Owner(project_id.id),
             )
-            is False
         ):
             return None
 
         event = self._allocate(
-            project_id, allocatable_capability_id, capability, time_slot
+            project_id, allocatable_capability_id, capability.capabilities, time_slot
         )
         return event.allocated_capability_id if event is not None else None
 
@@ -124,14 +129,16 @@ class AllocationFacade:
         if not to_allocate:
             return False
 
-        allocated_event = self._allocate(project_id, to_allocate, capability, time_slot)
+        allocated_event = self._allocate(
+            project_id, to_allocate.id, to_allocate.capabilities, time_slot
+        )
         return allocated_event is not None
 
     def _allocate(
         self,
         project_id: ProjectAllocationsId,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
+        capability: CapabilitySelector,
         time_slot: TimeSlot,
     ) -> CapabilitiesAllocated | None:
         allocations = self._project_allocations_repository.get(project_id)
@@ -144,9 +151,9 @@ class AllocationFacade:
 
     def _find_chosen_allocatable_capability(
         self, proposed_capabilities: AllocatableCapabilitiesSummary, chosen: ResourceId
-    ) -> AllocatableCapabilityId | None:
+    ) -> AllocatableCapabilitySummary | None:
         matching = [
-            ac.id
+            ac
             for ac in proposed_capabilities.all
             if ac.id.to_availability_resource_id() == chosen
         ]

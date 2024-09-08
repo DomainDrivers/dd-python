@@ -12,6 +12,7 @@ from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.owner import Owner
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 from tests.smartschedule.allocation.availability_assert import AvailabilityAssert
 from tests.smartschedule.allocation.conftest import AllocatableResourceFactory
@@ -38,13 +39,17 @@ class TestCapabilityAllocating:
         )
 
         result = allocation_facade.allocate_to_project(
-            project_id, allocatable_resource_id, skill_java, one_day
+            project_id, allocatable_resource_id, one_day
         )
 
         assert result is not None
         summary = allocation_facade.find_all_projects_allocations()
         assert summary.project_allocations[project_id].all == {
-            AllocatedCapability(allocatable_resource_id, skill_java, one_day)
+            AllocatedCapability(
+                allocatable_resource_id,
+                CapabilitySelector.can_just_perform(skill_java),
+                one_day,
+            )
         }
         summary.demands[project_id].all == [demand]
         availability_assert.assert_availability_was_blocked(
@@ -74,7 +79,7 @@ class TestCapabilityAllocating:
         )
 
         result = allocation_facade.allocate_to_project(
-            project_id, allocatable_resource_id, skill_java, one_day
+            project_id, allocatable_resource_id, one_day
         )
 
         assert result is None
@@ -95,7 +100,7 @@ class TestCapabilityAllocating:
         )
 
         result = allocation_facade.allocate_to_project(
-            project_id, not_scheduled_capability, skill_java, one_day
+            project_id, not_scheduled_capability, one_day
         )
 
         assert result is None
@@ -116,9 +121,8 @@ class TestCapabilityAllocating:
         allocation_facade.schedule_project_allocations_demands(
             project_id, Demands.none()
         )
-        chosen_capability = Capability.skill("JAVA")
         allocated_id = allocation_facade.allocate_to_project(
-            project_id, allocatable_resource_id, chosen_capability, one_day
+            project_id, allocatable_resource_id, one_day
         )
         assert allocated_id is not None
 

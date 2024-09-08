@@ -4,6 +4,12 @@ import functools
 from dataclasses import dataclass
 
 from smartschedule.allocation.allocated_capability import AllocatedCapability
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
+from smartschedule.allocation.capabilityscheduling.allocatable_capability_summary import (
+    AllocatableCapabilitySummary,
+)
 from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.allocation.projects_allocations_summary import (
@@ -49,6 +55,38 @@ class PotentialTransfers:
         )
         self.summary.project_allocations[project_to] = new_allocations_project_to
         return PotentialTransfers(self.summary, self.earnings)
+
+    def transfer_capabilities(
+        self,
+        project_to: ProjectAllocationsId,
+        capability_to_transfer: AllocatableCapabilitySummary,
+        for_slot: TimeSlot,
+    ) -> PotentialTransfers:
+        project_to_move_from = self._find_project_to_move_from(
+            capability_to_transfer.id, for_slot
+        )
+        if project_to_move_from is None:
+            return self
+
+        allocated_capability = AllocatedCapability(
+            capability_to_transfer.id,
+            capability_to_transfer.capabilities,
+            capability_to_transfer.time_slot,
+        )
+        return self.transfer(
+            project_to_move_from, project_to, allocated_capability, for_slot
+        )
+
+    def _find_project_to_move_from(
+        self, capability_id: AllocatableCapabilityId, for_slot: TimeSlot
+    ) -> ProjectAllocationsId | None:
+        for (
+            project_allocations_id,
+            allocations,
+        ) in self.summary.project_allocations.items():
+            if allocations.find(capability_id) is not None:
+                return project_allocations_id
+        return None
 
     def to_simulated_projects(self) -> list[SimulatedProject]:
         return [

@@ -19,7 +19,7 @@ from smartschedule.allocation.project_allocations_demands_scheduled import (
     ProjectAllocationsDemandsScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.sqlalchemy_extensions import AsJSON, EmbeddedUUID, registry
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -64,7 +64,7 @@ class ProjectAllocations:
     def allocate(
         self,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
+        capability: CapabilitySelector,
         requested_slot: TimeSlot,
         when: datetime,
     ) -> CapabilitiesAllocated | None:

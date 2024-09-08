@@ -17,5 +17,5 @@ class TestScheduleDeviceCapabilities:
         one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         allocations = device_facade.schedule_capabilities(device_id, one_day)
 
-        loaded = capability_finder.find_by_id(allocations)
+        loaded = capability_finder.find_by_id(*allocations)
         assert len(loaded.all) == len(allocations)

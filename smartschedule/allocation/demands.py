@@ -43,7 +43,7 @@ class Demands:
 
     def _satisfied_by(self, demand: Demand, allocations: Allocations) -> bool:
         return any(
-            allocation.capability == demand.capability
+            allocation.capability.can_perform(demand.capability)
             and demand.time_slot.within(allocation.time_slot)
             for allocation in allocations.all
         )

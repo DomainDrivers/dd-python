@@ -57,7 +57,7 @@ class TestCapabilityScheduling:
             AllocatableResourceId.new_one(), [java_skill, rust_skill], one_day
         )
 
-        loaded = capability_finder.find_by_id(allocatable)
+        loaded = capability_finder.find_by_id(*allocatable)
         assert len(allocatable) == len(loaded.all)
         for allocatable_capability_id in allocatable:
             availability_assert.assert_availability_slots_created(
