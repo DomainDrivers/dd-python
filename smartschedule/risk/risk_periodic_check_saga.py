@@ -58,7 +58,7 @@ class RiskPeriodicCheckSaga:
         self.deadline = None
 
     def are_demands_satisfied(self) -> bool:
-        return False
+        return len(self.missing_demands.all) == 0
 
     @singledispatchmethod
     def handle(self, event: Any) -> RiskPeriodicCheckSagaStep:
@@ -68,37 +68,63 @@ class RiskPeriodicCheckSaga:
     def _handle_earnings_recalculated(
         self, event: EarningsRecalculated
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        self.earnings = event.earnings
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
     def _handle_project_allocations_demands_scheduled(
         self, event: ProjectAllocationsDemandsScheduled
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        self.missing_demands = event.missing_demands
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
     def _handle_project_allocations_scheduled(
         self, event: ProjectAllocationScheduled
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        self.deadline = event.from_to.to
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
     def _handle_resource_taken_over(
         self, event: ResourceTakenOver
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        if self.deadline is not None and event.occurred_at > self.deadline:
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+        return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK
 
     @handle.register
     def _handle_capability_released(
         self, event: CapabilityReleased
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        self.missing_demands = event.missing_demands
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
     def _handle_capabilities_allocated(
         self, event: CapabilitiesAllocated
     ) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        self.missing_demands = event.missing_demands
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     def handle_weekly_check(self, when: datetime) -> RiskPeriodicCheckSagaStep:
-        raise NotImplementedError
+        if self.deadline is None or when > self.deadline:
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+
+        days_to_deadline = int((self.deadline - when).total_seconds() / 86400)
+        if days_to_deadline > self.UPCOMING_DEADLINE_AVAILABILITY_SEARCH:
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+        elif days_to_deadline > self.UPCOMING_DEADLINE_REPLACEMENT_SUGGESTION:
+            return RiskPeriodicCheckSagaStep.FIND_AVAILABLE
+
+        if self.earnings >= self.RISK_THRESHOLD_VALUE:
+            return RiskPeriodicCheckSagaStep.SUGGEST_REPLACEMENT
+
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
