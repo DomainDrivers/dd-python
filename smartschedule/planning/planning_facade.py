@@ -1,6 +1,8 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from smartschedule.availability.resource_id import ResourceId
+from smartschedule.planning.capabilities_demanded import CapabilitiesDemanded
+from smartschedule.planning.critical_stage_planned import CriticalStagePlanned
 from smartschedule.planning.demands import Demands
 from smartschedule.planning.demands_per_stage import DemandsPerStage
 from smartschedule.planning.parallelization.duration_calculator import (
@@ -19,6 +21,7 @@ from smartschedule.planning.project_card import ProjectCard
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.planning.project_repository import ProjectRepository
 from smartschedule.planning.schedule.schedule import Schedule
+from smartschedule.shared.events_publisher import EventsPublisher
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -28,10 +31,12 @@ class PlanningFacade:
         project_repository: ProjectRepository,
         stage_parallelization: StageParallelization,
         plan_chosen_resources_service: PlanChosenResources,
+        evens_publisher: EventsPublisher,
     ) -> None:
         self._project_repository = project_repository
         self._stage_parallelization = stage_parallelization
         self._plan_chosen_resources_service = plan_chosen_resources_service
+        self._events_publisher = evens_publisher
 
     def add_new_project(self, name: str, *stages: Stage) -> ProjectId:
         parallelized_stages = self._stage_parallelization.of(set(stages))
@@ -49,12 +54,16 @@ class PlanningFacade:
     def add_demands(self, project_id: ProjectId, demands: Demands) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_demands(demands)
+        event = CapabilitiesDemanded(project_id, project.all_demands, datetime.now())
+        self._events_publisher.publish(event)
 
     def define_demands_per_stage(
         self, project_id: ProjectId, demands_per_stage: DemandsPerStage
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_demands_per_stage(demands_per_stage)
+        event = CapabilitiesDemanded(project_id, project.all_demands, datetime.now())
+        self._events_publisher.publish(event)
 
     def define_resources_within_dates(
         self,
@@ -95,12 +104,18 @@ class PlanningFacade:
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_critical_stage(critical_stage, stage_time_slot)
+        event = CriticalStagePlanned(
+            project_id, stage_time_slot, resource_id, datetime.now()
+        )
+        self._events_publisher.publish(event)
 
     def plan_critical_stage(
         self, project_id: ProjectId, critical_stage: Stage, stage_time_slot: TimeSlot
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_critical_stage(critical_stage, stage_time_slot)
+        event = CriticalStagePlanned(project_id, stage_time_slot, None, datetime.now())
+        self._events_publisher.publish(event)
 
     def duration_of(self, *stages: Stage) -> timedelta:
         return calculate_duration(stages)

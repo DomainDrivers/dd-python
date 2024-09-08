@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from smartschedule.availability.calendar import Calendar
 from smartschedule.availability.calendars import Calendars
 from smartschedule.availability.owner import Owner
@@ -11,8 +13,10 @@ from smartschedule.availability.resource_grouped_availability import (
     ResourceGroupedAvailability,
 )
 from smartschedule.availability.resource_id import ResourceId
+from smartschedule.availability.resource_taken_over import ResourceTakenOver
 from smartschedule.availability.segment import segments
 from smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
+from smartschedule.shared.events_publisher import EventsPublisher
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -21,9 +25,11 @@ class AvailabilityFacade:
         self,
         repository: ResourceAvailabilityRepository,
         read_model: ResourceAvailabilityReadModel,
+        events_publisher: EventsPublisher,
     ) -> None:
         self._repository = repository
         self._read_model = read_model
+        self._events_publisher = events_publisher
 
     def create_resource_slots(
         self,
@@ -71,11 +77,15 @@ class AvailabilityFacade:
         if to_disable.has_no_slots():
             return False
 
-        result = to_disable.disable(requester)
-        if result:
-            return self._repository.save_checking_version(to_disable)
-        else:
-            return False
+        previous_owners = to_disable.owners
+        if result := to_disable.disable(requester):
+            if result := self._repository.save_checking_version(to_disable):
+                event = ResourceTakenOver(
+                    resource_id, previous_owners, time_slot, datetime.now()
+                )
+                self._events_publisher.publish(event)
+
+        return result
 
     def block_random_available(
         self, resource_ids: set[ResourceId], within: TimeSlot, owner: Owner

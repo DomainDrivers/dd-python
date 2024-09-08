@@ -1,9 +1,13 @@
 from datetime import date, datetime, timedelta
+from typing import Any
 
 import pytest
 from lagom import Container
+from mockito import verify  # type: ignore
+from mockito.matchers import arg_that  # type: ignore
 
 from smartschedule.availability.resource_id import ResourceId
+from smartschedule.planning.capabilities_demanded import CapabilitiesDemanded
 from smartschedule.planning.chosen_resources import ChosenResources
 from smartschedule.planning.demand import Demand
 from smartschedule.planning.demands import Demands
@@ -12,6 +16,7 @@ from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
 from smartschedule.planning.schedule.schedule import Schedule
 from smartschedule.shared.capability.capability import Capability
+from smartschedule.shared.event_bus import EventBus
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -154,3 +159,29 @@ class TestPlanningFacade:
 
         loaded = planning_facade.load(project_id)
         assert loaded.schedule.dates == dates
+
+    def test_capabilities_demanded_event_is_emitted_after_adding_demands(
+        self, planning_facade: PlanningFacade, when: Any
+    ) -> None:
+        when(EventBus).publish(...)
+        project_id = planning_facade.add_new_project("project", Stage("Stage 1"))
+        demands_for_java = Demands.of(Demand.for_(Capability.skill("JAVA")))
+
+        planning_facade.add_demands(project_id, demands_for_java)
+
+        verify(EventBus).publish(
+            arg_that(
+                lambda event: self._is_capabilities_demanded(
+                    event, project_id, demands_for_java
+                )
+            )
+        )
+
+    def _is_capabilities_demanded(
+        self, event: Any, project_id: Any, demands: Any
+    ) -> bool:
+        return (
+            isinstance(event, CapabilitiesDemanded)
+            and event.project_id == project_id
+            and event.demands == demands
+        )

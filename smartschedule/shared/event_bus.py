@@ -8,7 +8,7 @@ class EventBus(EventsPublisher):
     def __init__(self, container: Container) -> None:
         self._container = container
 
-    def publish_after_commit(self, event: Event) -> None:
+    def publish(self, event: Event) -> None:
         # could grab a session from the container
         # and append new 'after commit' event handler
         pass

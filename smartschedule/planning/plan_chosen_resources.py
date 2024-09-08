@@ -1,13 +1,16 @@
+from datetime import datetime
 from itertools import chain
 
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.calendars import Calendars
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.chosen_resources import ChosenResources
+from smartschedule.planning.needed_resource_chosen import NeededResourcesChosen
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.planning.project_repository import ProjectRepository
 from smartschedule.planning.schedule.schedule import Schedule
+from smartschedule.shared.events_publisher import EventsPublisher
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -16,9 +19,11 @@ class PlanChosenResources:
         self,
         project_repository: ProjectRepository,
         availability_facade: AvailabilityFacade,
+        events_publisher: EventsPublisher,
     ) -> None:
         self._project_repository = project_repository
         self._availability_facade = availability_facade
+        self._events_publisher = events_publisher
 
     def define_resources_within_dates(
         self,
@@ -29,6 +34,10 @@ class PlanChosenResources:
         project = self._project_repository.get(id=project_id)
         chosen_resources = ChosenResources(resources, time_boundaries)
         project.add_chosen_resources(chosen_resources)
+        event = NeededResourcesChosen(
+            project_id, resources, time_boundaries, datetime.now()
+        )
+        self._events_publisher.publish(event)
 
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage

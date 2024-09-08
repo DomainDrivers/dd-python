@@ -6,5 +6,5 @@ from smartschedule.shared.events_publisher import EventsPublisher
 
 def build() -> Container:
     container = Container()
-    container[EventsPublisher] = EventBus  # type: ignore[type-abstract]
+    container[EventsPublisher] = lambda c: EventBus(c)  # type: ignore[type-abstract]
     return container

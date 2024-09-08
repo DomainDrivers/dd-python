@@ -5,5 +5,6 @@ from smartschedule.shared.event import Event
 
 class EventsPublisher(abc.ABC):
     @abc.abstractmethod
-    def publish_after_commit(self, event: Event) -> None:
+    def publish(self, event: Event) -> None:
+        # remember about transactions scope
         pass

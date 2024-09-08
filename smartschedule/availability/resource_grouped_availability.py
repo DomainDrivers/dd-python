@@ -57,6 +57,10 @@ class ResourceGroupedAvailability:
         else:
             return None
 
+    @property
+    def owners(self) -> set[Owner]:
+        return {ra.blocked_by() for ra in self.resource_availabilities}
+
     def __len__(self) -> int:
         return len(self.resource_availabilities)
 

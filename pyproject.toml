@@ -23,6 +23,8 @@ factory-boy = "*"
 tach = "*"
 types-python-dateutil = "*"
 testcontainers = {version = "*", extras = ["postgres"]}
+mockito = "*"
+pytest-mockito = "*"
 
 [build-system]
 requires = ["poetry-core"]

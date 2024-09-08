@@ -1,9 +1,15 @@
 from datetime import timedelta
+from typing import Any
+
+from mockito import verify  # type: ignore
+from mockito.matchers import arg_that  # type: ignore
 
 from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.availability.calendar import Calendar
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_id import ResourceId
+from smartschedule.availability.resource_taken_over import ResourceTakenOver
+from smartschedule.shared.event_bus import EventBus
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -177,3 +183,33 @@ class TestAvailabilityFacade:
             fifteen_minutes
         )
         assert daily_calendar.taken_by(new_requester) == [fifteen_minutes]
+
+    def test_resource_taken_over_event_is_emitted_after_taking_over_the_resource(
+        self, availability_facade: AvailabilityFacade, when: Any
+    ) -> None:
+        when(EventBus).publish(...)
+        resource_id = ResourceId.new_one()
+        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        initial_owner = Owner.new_one()
+        new_owner = Owner.new_one()
+        availability_facade.create_resource_slots(resource_id, one_day)
+        availability_facade.block(resource_id, one_day, initial_owner)
+
+        result = availability_facade.disable(resource_id, one_day, new_owner)
+
+        assert result is True
+        verify(EventBus).publish(arg_that(lambda event: self._is_resource_taken_over))
+
+    def _is_resource_taken_over(
+        self,
+        event: Any,
+        resource_id: ResourceId,
+        initial_owner: Owner,
+        time_slot: TimeSlot,
+    ) -> bool:
+        return (
+            isinstance(event, ResourceTakenOver)
+            and event.resource_id == resource_id
+            and event.slot == time_slot
+            and event.previous_owners == {initial_owner}
+        )

@@ -698,6 +698,17 @@ files = [
 ]
 
 [[package]]
+name = "mockito"
+version = "1.5.1"
+description = "Spying framework"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mockito-1.5.1-py3-none-any.whl", hash = "sha256:218c695baaf8e27980a263c9c1c4efb60ae8bbaf171be28558ec7ef3dae1ead3"},
+    {file = "mockito-1.5.1.tar.gz", hash = "sha256:405624091715cc3954e2fa39cc50e508d59778d4d2fb56c8db7bfa5f593d3303"},
+]
+
+[[package]]
 name = "networkx"
 version = "3.3"
 description = "Python package for creating and manipulating graphs and networks"
@@ -1133,6 +1144,20 @@ pluggy = ">=1.5,<2"
 
 [package.extras]
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+
+[[package]]
+name = "pytest-mockito"
+version = "0.0.4"
+description = "Base fixtures for mockito"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytest-mockito-0.0.4.tar.gz", hash = "sha256:40d40cdf118127dcb1e3c9e838b0d1c11d5197a23beaf10b6e3f42f9b6cb68a9"},
+]
+
+[package.dependencies]
+mockito = ">=1.0.6"
+pytest = ">=3"
 
 [[package]]
 name = "python-dateutil"
@@ -2111,4 +2136,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "0cc605c188bd9c1f921424f57bcab2e19d1039404b20b439b713a0c89563d73b"
+content-hash = "4facaad7bfa1ea16410341c85ec9345c2b61c39930ea7c262ecee82d4e146646"
