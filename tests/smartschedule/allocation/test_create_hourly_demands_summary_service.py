@@ -25,10 +25,10 @@ class TestCreateHourlyDemandsSummaryService:
         csharp_project_id = ProjectAllocationsId.new_one()
         java_project_id = ProjectAllocationsId.new_one()
         csharp_project = ProjectAllocations(
-            csharp_project_id, Allocations.none(), self.CSHARP, TimeSlot.empty()
+            csharp_project_id, Allocations.none(), self.CSHARP, self.JAN
         )
         java_project = ProjectAllocations(
-            java_project_id, Allocations.none(), self.JAVA, TimeSlot.empty()
+            java_project_id, Allocations.none(), self.JAVA, self.JAN
         )
 
         result = self.service.create([csharp_project, java_project], self.NOW)
@@ -39,3 +39,18 @@ class TestCreateHourlyDemandsSummaryService:
             csharp_project_id: self.CSHARP,
         }
         assert result.missing_demands == expected_missing_demands
+
+    def test_takes_into_account_only_projects_with_time_slot(self) -> None:
+        with_time_slot_id = ProjectAllocationsId.new_one()
+        without_time_slot_id = ProjectAllocationsId.new_one()
+        with_time_slot = ProjectAllocations(
+            with_time_slot_id, Allocations.none(), self.CSHARP, self.JAN
+        )
+        without_time_slot = ProjectAllocations(
+            without_time_slot_id, Allocations.none(), self.CSHARP, TimeSlot.empty()
+        )
+
+        result = self.service.create([with_time_slot, without_time_slot], self.NOW)
+
+        assert result.occurred_at == self.NOW
+        assert result.missing_demands == {with_time_slot_id: self.CSHARP}

@@ -38,6 +38,8 @@ class CreateHourlyDemandsSummaryService:
         self, project_allocations: list[ProjectAllocations], when: datetime
     ) -> NotSatisfiedDemands:
         missing_demands = {
-            pa.project_id: pa.missing_demands() for pa in project_allocations
+            pa.project_id: pa.missing_demands()
+            for pa in project_allocations
+            if pa.has_time_slot()
         }
         return NotSatisfiedDemands(missing_demands=missing_demands, occurred_at=when)
