@@ -182,10 +182,11 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, from_to: TimeSlot
     ) -> None:
         allocations = self._project_allocations_repository.get(project_id)
-        allocations.define_slot(from_to, datetime.now(tz=timezone.utc))
-        self._event_publisher.publish(
-            ProjectAllocationScheduled(project_id, from_to, datetime.now())
+        project_dates_set = allocations.define_slot(
+            from_to, datetime.now(tz=timezone.utc)
         )
+        if project_dates_set is not None:
+            self._event_publisher.publish(project_dates_set)
 
     def schedule_project_allocations_demands(
         self, project_id: ProjectAllocationsId, demands: Demands
@@ -194,7 +195,7 @@ class AllocationFacade:
             allocations = self._project_allocations_repository.get(project_id)
         except self._project_allocations_repository.NotFound:
             allocations = ProjectAllocations.empty(project_id)
-        event = allocations.add_demands(demands, datetime.now(tz=timezone.utc))
-        if event is not None:
-            self._event_publisher.publish(event)
+        _event = allocations.add_demands(demands, datetime.now(tz=timezone.utc))
+        # event could be stored in a local store
+        # always remember about transactional boundaries
         self._project_allocations_repository.add(allocations)

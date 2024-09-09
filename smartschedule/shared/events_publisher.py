@@ -1,10 +1,9 @@
 import abc
 
-from smartschedule.shared.event import Event
+from smartschedule.shared.published_event import PublishedEvent
 
 
 class EventsPublisher(abc.ABC):
     @abc.abstractmethod
-    def publish(self, event: Event) -> None:
-        # remember about transactions scope
+    def publish(self, event: PublishedEvent) -> None:
         pass

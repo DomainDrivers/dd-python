@@ -4,10 +4,11 @@ from uuid import UUID, uuid4
 
 from smartschedule.planning.demands import Demands
 from smartschedule.planning.project_id import ProjectId
+from smartschedule.shared.published_event import PublishedEvent
 
 
 @dataclass(frozen=True)
-class CapabilitiesDemanded:
+class CapabilitiesDemanded(PublishedEvent):
     project_id: ProjectId
     demands: Demands
     occurred_at: datetime

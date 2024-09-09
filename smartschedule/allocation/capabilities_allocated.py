@@ -4,10 +4,11 @@ from uuid import UUID, uuid4
 
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
+from smartschedule.shared.private_event import PrivateEvent
 
 
 @dataclass(frozen=True)
-class CapabilitiesAllocated:
+class CapabilitiesAllocated(PrivateEvent):
     allocated_capability_id: UUID
     project_id: ProjectAllocationsId
     missing_demands: Demands

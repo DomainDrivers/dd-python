@@ -29,3 +29,6 @@ class RiskPeriodicCheckSagaId:
 
     def __str__(self) -> str:
         return str(self._project_risk_saga_id)
+
+    def __lt__(self, other: RiskPeriodicCheckSagaId) -> bool:
+        return self._project_risk_saga_id < other._project_risk_saga_id

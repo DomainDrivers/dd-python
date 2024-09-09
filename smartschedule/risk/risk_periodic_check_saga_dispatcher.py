@@ -1,8 +1,6 @@
 import itertools
 from datetime import datetime
 
-from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
-from smartschedule.allocation.capability_released import CapabilityReleased
 from smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summary import (
     AllocatableCapabilitiesSummary,
 )
@@ -12,14 +10,12 @@ from smartschedule.allocation.capabilityscheduling.capability_finder import (
 from smartschedule.allocation.cashflow.earnings_recalculated import EarningsRecalculated
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
+from smartschedule.allocation.not_satisfied_demands import NotSatisfiedDemands
 from smartschedule.allocation.potential_transfers_service import (
     PotentialTransfersService,
 )
 from smartschedule.allocation.project_allocation_scheduled import (
     ProjectAllocationScheduled,
-)
-from smartschedule.allocation.project_allocations_demands_scheduled import (
-    ProjectAllocationsDemandsScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.availability.resource_taken_over import ResourceTakenOver
@@ -48,32 +44,6 @@ class RiskPeriodicCheckSagaDispatcher:
 
     # remember about transactions spanning saga and potential external system
     @EventBus.async_event_handler
-    def handle_project_allocations_demands_scheduled(
-        self, event: ProjectAllocationsDemandsScheduled
-    ) -> None:
-        try:
-            saga = self._state_repository.find_by_project_id(event.project_id)
-        except self._state_repository.NotFound:
-            saga = RiskPeriodicCheckSaga(event.project_id, event.missing_demands)
-
-        next_step = saga.handle(event)
-        self._state_repository.add(saga)
-        self._perform(next_step, saga)
-
-    # remember about transactions spanning saga and potential external system
-    @EventBus.async_event_handler
-    def handle_earnings_recalculated(self, event: EarningsRecalculated) -> None:
-        try:
-            saga = self._state_repository.find_by_project_id(event.project_id)
-        except self._state_repository.NotFound:
-            saga = RiskPeriodicCheckSaga(event.project_id, earnings=event.earnings)
-
-        next_step = saga.handle(event)
-        self._state_repository.add(saga)
-        self._perform(next_step, saga)
-
-    # remember about transactions spanning saga and potential external system
-    @EventBus.async_event_handler
     def handle_project_allocations_scheduled(
         self, event: ProjectAllocationScheduled
     ) -> None:
@@ -83,15 +53,26 @@ class RiskPeriodicCheckSagaDispatcher:
         self._perform(next_step, saga)
 
     @EventBus.async_event_handler
-    def handle_capabilities_allocated(self, event: CapabilitiesAllocated) -> None:
-        saga = self._state_repository.find_by_project_id(event.project_id)
-        next_step = saga.handle(event)
-        self._state_repository.add(saga)
-        self._perform(next_step, saga)
+    def handle_not_satisfied_demands(self, event: NotSatisfiedDemands) -> None:
+        project_ids = list(event.missing_demands.keys())
+        sagas = self._state_repository.find_by_project_id_in_or_else_create(project_ids)
+        next_steps: list[tuple[RiskPeriodicCheckSaga, RiskPeriodicCheckSagaStep]] = []
+        for saga in sagas:
+            missing_demands = event.missing_demands[saga.project_id]
+            next_step = saga.set_missing_demands(missing_demands)
+            next_steps.append((saga, next_step))
+        self._state_repository.add_all(sagas)
+        for saga, next_step in next_steps:
+            self._perform(next_step, saga)
 
+    # remember about transactions spanning saga and potential external system
     @EventBus.async_event_handler
-    def handle_capability_released(self, event: CapabilityReleased) -> None:
-        saga = self._state_repository.find_by_project_id(event.project_id)
+    def handle_earnings_recalculated(self, event: EarningsRecalculated) -> None:
+        try:
+            saga = self._state_repository.find_by_project_id(event.project_id)
+        except self._state_repository.NotFound:
+            saga = RiskPeriodicCheckSaga(event.project_id, earnings=event.earnings)
+
         next_step = saga.handle(event)
         self._state_repository.add(saga)
         self._perform(next_step, saga)

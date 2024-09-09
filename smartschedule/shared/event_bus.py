@@ -8,13 +8,13 @@ from typing import Any, Callable, ClassVar, Final, ParamSpec, Type, TypeAlias, T
 
 from lagom import Container
 
-from smartschedule.shared.event import Event
 from smartschedule.shared.events_publisher import EventsPublisher
+from smartschedule.shared.published_event import PublishedEvent
 
 logger = logging.getLogger(__name__)
 
 ClassWithEventHandlers: TypeAlias = Type[object]
-EventHandler: TypeAlias = Callable[[Any, Event], None]
+EventHandler: TypeAlias = Callable[[Any, PublishedEvent], None]
 
 
 P = ParamSpec("P")
@@ -43,13 +43,15 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 class EventBus(EventsPublisher):
-    __handlers: ClassVar[dict[Type[Event], list[ClassBasedHandler]]] = defaultdict(list)
+    __handlers: ClassVar[dict[Type[PublishedEvent], list[ClassBasedHandler]]] = (
+        defaultdict(list)
+    )
 
     def __init__(self, container: Container, executor: Executor) -> None:
         self._container = container
         self._executor = executor
 
-    def publish(self, event: Event) -> None:
+    def publish(self, event: PublishedEvent) -> None:
         handlers = self.__handlers[type(event)]
         for handler in handlers:
 

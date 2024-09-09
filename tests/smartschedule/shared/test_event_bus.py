@@ -6,11 +6,12 @@ import pytest
 from lagom import Container
 
 from smartschedule.shared.event_bus import EventBus
+from smartschedule.shared.published_event import PublishedEvent
 from tests.timeout import timeout
 
 
 @dataclass(frozen=True)
-class DummyEvent:
+class DummyEvent(PublishedEvent):
     occurred_at: datetime
 
 

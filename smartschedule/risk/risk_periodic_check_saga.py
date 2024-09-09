@@ -6,16 +6,11 @@ from typing import Any, Final
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
-from smartschedule.allocation.capability_released import CapabilityReleased
 from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.cashflow.earnings_recalculated import EarningsRecalculated
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocation_scheduled import (
     ProjectAllocationScheduled,
-)
-from smartschedule.allocation.project_allocations_demands_scheduled import (
-    ProjectAllocationsDemandsScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.availability.resource_taken_over import ResourceTakenOver
@@ -60,25 +55,15 @@ class RiskPeriodicCheckSaga:
     def are_demands_satisfied(self) -> bool:
         return len(self.missing_demands.all) == 0
 
+    def set_missing_demands(
+        self, missing_demands: Demands
+    ) -> RiskPeriodicCheckSagaStep:
+        # TODO: implement
+        raise NotImplementedError
+
     @singledispatchmethod
     def handle(self, event: Any) -> RiskPeriodicCheckSagaStep:
         raise NotImplementedError(f"Unsupported event type - {type(event)}")
-
-    @handle.register
-    def _handle_earnings_recalculated(
-        self, event: EarningsRecalculated
-    ) -> RiskPeriodicCheckSagaStep:
-        self.earnings = event.earnings
-        return RiskPeriodicCheckSagaStep.DO_NOTHING
-
-    @handle.register
-    def _handle_project_allocations_demands_scheduled(
-        self, event: ProjectAllocationsDemandsScheduled
-    ) -> RiskPeriodicCheckSagaStep:
-        self.missing_demands = event.missing_demands
-        if self.are_demands_satisfied():
-            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
-        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
     def _handle_project_allocations_scheduled(
@@ -88,28 +73,19 @@ class RiskPeriodicCheckSaga:
         return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @handle.register
+    def _handle_earnings_recalculated(
+        self, event: EarningsRecalculated
+    ) -> RiskPeriodicCheckSagaStep:
+        self.earnings = event.earnings
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
+
+    @handle.register
     def _handle_resource_taken_over(
         self, event: ResourceTakenOver
     ) -> RiskPeriodicCheckSagaStep:
         if self.deadline is not None and event.occurred_at > self.deadline:
             return RiskPeriodicCheckSagaStep.DO_NOTHING
         return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK
-
-    @handle.register
-    def _handle_capability_released(
-        self, event: CapabilityReleased
-    ) -> RiskPeriodicCheckSagaStep:
-        self.missing_demands = event.missing_demands
-        return RiskPeriodicCheckSagaStep.DO_NOTHING
-
-    @handle.register
-    def _handle_capabilities_allocated(
-        self, event: CapabilitiesAllocated
-    ) -> RiskPeriodicCheckSagaStep:
-        self.missing_demands = event.missing_demands
-        if self.are_demands_satisfied():
-            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
-        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     def handle_weekly_check(self, when: datetime) -> RiskPeriodicCheckSagaStep:
         if self.deadline is None or when > self.deadline:

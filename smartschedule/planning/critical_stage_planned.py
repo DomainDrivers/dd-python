@@ -3,11 +3,12 @@ from datetime import datetime
 
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.planning.project_id import ProjectId
+from smartschedule.shared.published_event import PublishedEvent
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
 @dataclass(frozen=True)
-class CriticalStagePlanned:
+class CriticalStagePlanned(PublishedEvent):
     project_id: ProjectId
     stage_time_slot: TimeSlot
     critical_resource_id: ResourceId | None
