@@ -58,8 +58,10 @@ class RiskPeriodicCheckSaga:
     def set_missing_demands(
         self, missing_demands: Demands
     ) -> RiskPeriodicCheckSagaStep:
-        # TODO: implement
-        raise NotImplementedError
+        self.missing_demands = missing_demands
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     @singledispatchmethod
     def handle(self, event: Any) -> RiskPeriodicCheckSagaStep:
