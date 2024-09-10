@@ -1,18 +1,42 @@
 from typing import Any
+from unittest.mock import Mock
 
-from mockito import verify  # type: ignore
+import pytest
+from mockito import mock, verify  # type: ignore
 from mockito.matchers import arg_that  # type: ignore
 
 from smartschedule.allocation.allocation_facade import AllocationFacade
+from smartschedule.allocation.capabilityscheduling.capability_finder import (
+    CapabilityFinder,
+)
 from smartschedule.allocation.demand import Demand
 from smartschedule.allocation.demands import Demands
 from smartschedule.allocation.project_allocation_scheduled import (
     ProjectAllocationScheduled,
 )
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
+from smartschedule.availability.availability_facade import AvailabilityFacade
 from smartschedule.shared.capability.capability import Capability
-from smartschedule.shared.event_bus import EventBus
+from smartschedule.shared.events_publisher import EventsPublisher
 from smartschedule.shared.timeslot.time_slot import TimeSlot
+from tests.smartschedule.allocation.in_memory_project_allocations_repository import (
+    InMemoryProjectAllocationsRepository,
+)
+
+
+@pytest.fixture()
+def event_publisher() -> Any:
+    return mock(EventsPublisher)
+
+
+@pytest.fixture()
+def allocation_facade(event_publisher: Any) -> AllocationFacade:
+    return AllocationFacade(
+        project_allocations_repository=InMemoryProjectAllocationsRepository(),
+        availability_facade=Mock(spec_set=AvailabilityFacade),
+        capability_finder=Mock(CapabilityFinder),
+        event_publisher=event_publisher,
+    )
 
 
 class TestCreatingNewProject:
@@ -20,9 +44,9 @@ class TestCreatingNewProject:
     FEB = TimeSlot.create_monthly_time_slot_at_utc(2021, 2)
 
     def test_create_new_projct(
-        self, allocation_facade: AllocationFacade, when: Any
+        self, allocation_facade: AllocationFacade, event_publisher: Any, when: Any
     ) -> None:
-        when(EventBus).publish(...)
+        when(event_publisher).publish(...).thenReturn(None)
         demand = Demand(Capability.skill("JAVA"), self.JAN)
 
         demands = Demands.of(demand)
@@ -31,7 +55,7 @@ class TestCreatingNewProject:
         summary = allocation_facade.find_all_projects_allocations()
         assert summary.demands[new_project_id] == demands
         assert summary.time_slots[new_project_id] == self.JAN
-        verify(EventBus).publish(
+        verify(event_publisher).publish(
             arg_that(
                 lambda arg: self._is_project_allocation_event(
                     arg, new_project_id, self.JAN
@@ -40,9 +64,12 @@ class TestCreatingNewProject:
         )
 
     def test_redefine_project_deadline(
-        self, allocation_facade: AllocationFacade, when: Any
+        self,
+        allocation_facade: AllocationFacade,
+        event_publisher: Any,
+        when: Any,
     ) -> None:
-        when(EventBus).publish(...)
+        when(event_publisher).publish(...).thenReturn(None)
         demand = Demand(Capability.skill("JAVA"), self.JAN)
         demands = Demands.of(demand)
         new_project_id = allocation_facade.create_allocation(self.JAN, demands)
@@ -51,7 +78,7 @@ class TestCreatingNewProject:
 
         summary = allocation_facade.find_all_projects_allocations()
         assert summary.time_slots[new_project_id] == self.FEB
-        verify(EventBus).publish(
+        verify(event_publisher).publish(
             arg_that(
                 lambda arg: self._is_project_allocation_event(
                     arg, new_project_id, self.FEB

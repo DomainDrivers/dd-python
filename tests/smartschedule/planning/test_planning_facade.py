@@ -1,6 +1,8 @@
 from datetime import date, datetime, timedelta
 from typing import Any
 
+import pytest
+from lagom import Container
 from mockito import verify  # type: ignore
 from mockito.matchers import arg_that  # type: ignore
 
@@ -12,10 +14,21 @@ from smartschedule.planning.demands import Demands
 from smartschedule.planning.demands_per_stage import DemandsPerStage
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.planning_facade import PlanningFacade
+from smartschedule.planning.project_repository import ProjectRepository
 from smartschedule.planning.schedule.schedule import Schedule
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.event_bus import EventBus
 from smartschedule.shared.timeslot.time_slot import TimeSlot
+from tests.smartschedule.planning.in_memory_project_repository import (
+    InMemoryProjectRepository,
+)
+
+
+@pytest.fixture(autouse=True)
+def container(container: Container) -> Container:
+    test_container = container.clone()
+    test_container[ProjectRepository] = InMemoryProjectRepository()  # type: ignore[type-abstract]
+    return test_container
 
 
 class TestPlanningFacade:

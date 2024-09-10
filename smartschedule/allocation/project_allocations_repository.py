@@ -1,18 +1,26 @@
+import abc
 from datetime import datetime
-
-from sqlalchemy import DateTime, cast, select
+from typing import Sequence
 
 from smartschedule.allocation.project_allocations import ProjectAllocations
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from smartschedule.shared.sqlalchemy_extensions import SQLAlchemyRepository
 
 
-class ProjectAllocationsRepository(
-    SQLAlchemyRepository[ProjectAllocations, ProjectAllocationsId]
-):
+class ProjectAllocationsRepository(abc.ABC):
+    @abc.abstractmethod
+    def get(self, id: ProjectAllocationsId) -> ProjectAllocations:
+        pass
+
+    @abc.abstractmethod
+    def get_all(
+        self, ids: list[ProjectAllocationsId] | None = None
+    ) -> Sequence[ProjectAllocations]:
+        pass
+
+    @abc.abstractmethod
+    def add(self, model: ProjectAllocations) -> None:
+        pass
+
+    @abc.abstractmethod
     def find_all_containing_date(self, when: datetime) -> list[ProjectAllocations]:
-        stmt = select(self._type).filter(
-            cast(self._type.time_slot["from_"].astext, DateTime) <= when,
-            cast(self._type.time_slot["to"].astext, DateTime) > when,
-        )
-        return list(self._session.execute(stmt).scalars().all())
+        pass

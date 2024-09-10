@@ -1,15 +1,28 @@
 from typing import Any
 
+import pytest
+from lagom import Container
 from mockito import verify  # type: ignore
 from mockito.matchers import arg_that  # type: ignore
 
 from smartschedule.allocation.cashflow.cash_flow_facade import CashFlowFacade
+from smartschedule.allocation.cashflow.cashflow_repository import CashflowRepository
 from smartschedule.allocation.cashflow.cost import Cost
 from smartschedule.allocation.cashflow.earnings import Earnings
 from smartschedule.allocation.cashflow.earnings_recalculated import EarningsRecalculated
 from smartschedule.allocation.cashflow.income import Income
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.shared.event_bus import EventBus
+from tests.smartschedule.allocation.cashflow.in_memory_cashflow_repository import (
+    InMemoryCashflowRepository,
+)
+
+
+@pytest.fixture(autouse=True)
+def container(container: Container) -> Container:
+    test_container = container.clone()
+    test_container[CashflowRepository] = InMemoryCashflowRepository  # type: ignore[type-abstract]
+    return test_container
 
 
 class TestCashFlowFacade:

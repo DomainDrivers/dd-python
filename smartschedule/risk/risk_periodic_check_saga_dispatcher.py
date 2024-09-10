@@ -26,6 +26,7 @@ from smartschedule.risk.risk_periodic_check_saga_repository import (
 from smartschedule.risk.risk_periodic_check_saga_step import RiskPeriodicCheckSagaStep
 from smartschedule.risk.risk_push_notification import RiskPushNotification
 from smartschedule.shared.event_bus import EventBus
+from smartschedule.shared.repository import NotFound
 
 
 @EventBus.has_event_handlers
@@ -70,7 +71,7 @@ class RiskPeriodicCheckSagaDispatcher:
     def handle_earnings_recalculated(self, event: EarningsRecalculated) -> None:
         try:
             saga = self._state_repository.find_by_project_id(event.project_id)
-        except self._state_repository.NotFound:
+        except NotFound:
             saga = RiskPeriodicCheckSaga(event.project_id, earnings=event.earnings)
 
         next_step = saga.handle(event)

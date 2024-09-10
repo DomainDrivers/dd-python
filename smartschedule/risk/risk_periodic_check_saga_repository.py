@@ -6,6 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.risk.risk_periodic_check_saga import RiskPeriodicCheckSaga
 from smartschedule.risk.risk_periodic_check_saga_id import RiskPeriodicCheckSagaId
+from smartschedule.shared.repository import NotFound
 from smartschedule.shared.sqlalchemy_extensions import SQLAlchemyRepository
 
 
@@ -19,7 +20,7 @@ class RiskPeriodicCheckSagaRepository(
         try:
             return self._session.execute(stmt).scalar_one()
         except NoResultFound:
-            raise self.NotFound
+            raise NotFound
 
     def find_by_project_id_in(
         self, interested: list[ProjectAllocationsId]
@@ -32,7 +33,7 @@ class RiskPeriodicCheckSagaRepository(
     ) -> RiskPeriodicCheckSaga:
         try:
             return self.find_by_project_id(project_id)
-        except self.NotFound:
+        except NotFound:
             saga = RiskPeriodicCheckSaga(project_id)
             self.add(saga)
             return saga

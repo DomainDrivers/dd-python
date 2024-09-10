@@ -20,6 +20,8 @@ modules:
   - path: smartschedule.container
     depends_on:
       - path: smartschedule.shared
+      - path: smartschedule.allocation
+      - path: smartschedule.planning
   - path: smartschedule.optimization
     depends_on:
       - path: smartschedule.shared

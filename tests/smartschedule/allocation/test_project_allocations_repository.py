@@ -15,7 +15,7 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 @pytest.fixture()
 def repository(container: Container) -> ProjectAllocationsRepository:
-    return container.resolve(ProjectAllocationsRepository)
+    return container.resolve(ProjectAllocationsRepository)  # type: ignore[type-abstract]
 
 
 class TestProjectAllocationsRepository:

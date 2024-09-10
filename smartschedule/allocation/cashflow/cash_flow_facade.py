@@ -8,6 +8,7 @@ from smartschedule.allocation.cashflow.earnings_recalculated import EarningsReca
 from smartschedule.allocation.cashflow.income import Income
 from smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from smartschedule.shared.events_publisher import EventsPublisher
+from smartschedule.shared.repository import NotFound
 
 
 class CashFlowFacade:
@@ -26,7 +27,7 @@ class CashFlowFacade:
             cashflow = self._cash_flow_repository.get(project_id)
             cashflow.income = income
             cashflow.cost = cost
-        except self._cash_flow_repository.NotFound:
+        except NotFound:
             cashflow = Cashflow(project_id=project_id, income=income, cost=cost)
             self._cash_flow_repository.add(cashflow)
 

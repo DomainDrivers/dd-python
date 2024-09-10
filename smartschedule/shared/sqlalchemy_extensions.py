@@ -9,6 +9,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import registry as Registry
 
+from smartschedule.shared.repository import NotFound
 from smartschedule.shared.typing_extensions import JSON
 
 registry = Registry()
@@ -98,9 +99,6 @@ class SQLAlchemyRepository[TModel, TIdentity]:
     _type: Type[TModel]
     _pk_col: Column[EmbeddableUUID]
 
-    class NotFound(Exception):
-        pass
-
     def __class_getitem__(cls, type_arg: tuple[Type[TModel], Type[TIdentity]]) -> Self:
         model_type, identity_type = type_arg
 
@@ -135,7 +133,7 @@ class SQLAlchemyRepository[TModel, TIdentity]:
         try:
             return self._session.execute(stmt).scalar_one()
         except NoResultFound:
-            raise self.NotFound
+            raise NotFound
 
     def get_all(self, ids: list[TIdentity] | None = None) -> Sequence[TModel]:
         stmt = select(self._type)

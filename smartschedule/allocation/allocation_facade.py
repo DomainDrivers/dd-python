@@ -33,6 +33,7 @@ from smartschedule.availability.resource_id import ResourceId
 from smartschedule.shared.capability.capability import Capability
 from smartschedule.shared.capability_selector import CapabilitySelector
 from smartschedule.shared.events_publisher import EventsPublisher
+from smartschedule.shared.repository import NotFound
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
@@ -193,7 +194,7 @@ class AllocationFacade:
     ) -> None:
         try:
             allocations = self._project_allocations_repository.get(project_id)
-        except self._project_allocations_repository.NotFound:
+        except NotFound:
             allocations = ProjectAllocations.empty(project_id)
         _event = allocations.add_demands(demands, datetime.now(tz=timezone.utc))
         # event could be stored in a local store
