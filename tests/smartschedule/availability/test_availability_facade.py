@@ -9,6 +9,7 @@ from smartschedule.availability.calendar import Calendar
 from smartschedule.availability.owner import Owner
 from smartschedule.availability.resource_id import ResourceId
 from smartschedule.availability.resource_taken_over import ResourceTakenOver
+from smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
 from smartschedule.shared.event_bus import EventBus
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
@@ -40,11 +41,12 @@ class TestAvailabilityFacade:
             resource_id2, one_day, different_parent_id
         )
 
-        assert len(availability_facade.find_by_parent_id(parent_id, one_day)) == 96
-        assert (
-            len(availability_facade.find_by_parent_id(different_parent_id, one_day))
-            == 96
-        )
+        assert availability_facade.find_by_parent_id(
+            parent_id, one_day
+        ).is_entirely_with_parent_id(parent_id)
+        assert availability_facade.find_by_parent_id(
+            different_parent_id, one_day
+        ).is_entirely_with_parent_id(different_parent_id)
 
     def test_blocks_availabilities(
         self, availability_facade: AvailabilityFacade
@@ -85,7 +87,6 @@ class TestAvailabilityFacade:
 
         assert result is True
         availabilities = availability_facade.find(resource_id, one_day)
-        assert len(availabilities) == 96
         assert availabilities.is_disabled_entirely_by(owner)
 
     def test_cant_disable_when_no_slots_created(
@@ -165,24 +166,31 @@ class TestAvailabilityFacade:
         self, availability_facade: AvailabilityFacade
     ) -> None:
         resource_id = ResourceId.new_one()
-        one_day = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
-        fifteen_minutes = TimeSlot(one_day.from_, one_day.from_ + timedelta(minutes=15))
+        duration_of_7_slots = 7 * SegmentInMinutes.DEFAULT_SEGMENT_DURATION
+        seven_slots = TimeSlot.create_daily_time_slot_at_utc_duration(
+            2021, 1, 1, duration_of_7_slots
+        )
+        minimum_slot = TimeSlot(
+            seven_slots.from_,
+            seven_slots.from_ + SegmentInMinutes.DEFAULT_SEGMENT_DURATION,
+        )
+
         owner = Owner.new_one()
-        availability_facade.create_resource_slots(resource_id, one_day)
-        availability_facade.block(resource_id, one_day, owner)
-        availability_facade.release(resource_id, fifteen_minutes, owner)
+        availability_facade.create_resource_slots(resource_id, seven_slots)
+        availability_facade.block(resource_id, seven_slots, owner)
+        availability_facade.release(resource_id, minimum_slot, owner)
 
         new_requester = Owner.new_one()
-        result = availability_facade.block(resource_id, fifteen_minutes, new_requester)
+        result = availability_facade.block(resource_id, minimum_slot, new_requester)
 
         assert result is True
-        daily_calendar = availability_facade.load_calendar(resource_id, one_day)
-        assert len(daily_calendar.available_slots()) == 0
-        taken_by_owner = daily_calendar.taken_by(owner)
-        assert taken_by_owner == one_day.leftover_after_removing_common_with(
-            fifteen_minutes
+        entire_calendar = availability_facade.load_calendar(resource_id, seven_slots)
+        assert len(entire_calendar.available_slots()) == 0
+        taken_by_owner = entire_calendar.taken_by(owner)
+        assert taken_by_owner == seven_slots.leftover_after_removing_common_with(
+            minimum_slot
         )
-        assert daily_calendar.taken_by(new_requester) == [fifteen_minutes]
+        assert entire_calendar.taken_by(new_requester) == [minimum_slot]
 
     def test_resource_taken_over_event_is_emitted_after_taking_over_the_resource(
         self, availability_facade: AvailabilityFacade, when: Any

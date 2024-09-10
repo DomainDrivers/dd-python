@@ -76,6 +76,12 @@ class ResourceGroupedAvailability:
             for resource_availability in self.resource_availabilities
         )
 
+    def is_entirely_with_parent_id(self, parent_id: ResourceId) -> bool:
+        return all(
+            resource_availability.parent_id == parent_id
+            for resource_availability in self.resource_availabilities
+        )
+
     def find_blocked_by(self, owner: Owner) -> list[ResourceAvailability]:
         return [
             resource_availability

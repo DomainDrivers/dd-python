@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Final
 
 import pytest
 
@@ -10,11 +11,13 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
 class TestSlotToNormalizedSlod:
+    FIFTEEN_MINUTES_SEGMENT_DURATION: Final = 15
+
     def test_has_no_effect_when_slot_already_normalized(self) -> None:
         start = datetime(2023, 9, 9)
         end = datetime(2023, 9, 9, 1)
         time_slot = TimeSlot(start, end)
-        one_hour = SegmentInMinutes(60)
+        one_hour = SegmentInMinutes(60, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
 
         normalized = slot_to_normalized_slot(time_slot, one_hour)
 
@@ -24,7 +27,7 @@ class TestSlotToNormalizedSlod:
         start = datetime(2023, 9, 9, 0, 10)
         end = datetime(2023, 9, 9, 0, 59)
         time_slot = TimeSlot(start, end)
-        one_hour = SegmentInMinutes(60)
+        one_hour = SegmentInMinutes(60, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
 
         normalized = slot_to_normalized_slot(time_slot, one_hour)
 
@@ -34,7 +37,7 @@ class TestSlotToNormalizedSlod:
         start = datetime(2023, 9, 9, 0, 29)
         end = datetime(2023, 9, 9, 0, 31)
         time_slot = TimeSlot(start, end)
-        one_hour = SegmentInMinutes(60)
+        one_hour = SegmentInMinutes(60, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
 
         normalized = slot_to_normalized_slot(time_slot, one_hour)
 
@@ -50,7 +53,7 @@ class TestSlotToNormalizedSlod:
     def test_no_normalization_when_slot_starts_at_segment_start(
         self, start: datetime, end: datetime
     ) -> None:
-        fifteen_minutes = SegmentInMinutes(15)
+        fifteen_minutes = SegmentInMinutes(15, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
 
         normalized = slot_to_normalized_slot(TimeSlot(start, end), fifteen_minutes)
 

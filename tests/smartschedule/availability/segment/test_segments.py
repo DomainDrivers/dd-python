@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Final
 
 import pytest
 
@@ -12,19 +13,27 @@ from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
 class TestSegments:
+    FIFTEEN_MINUTES_SEGMENT_DURATION: Final = 15
+
     @pytest.mark.parametrize("value", [20, 18, 7])
-    def test_segment_cannot_be_created_with_number_not_being_multiply_of_15(
+    def test_segment_cannot_be_created_with_number_not_being_multiply_of_default_slot_duration(
         self, value: int
     ) -> None:
         with pytest.raises(ValueError):
-            SegmentInMinutes(value)
+            SegmentInMinutes(
+                minutes=value,
+                slot_duration_in_minutes=self.FIFTEEN_MINUTES_SEGMENT_DURATION,
+            )
 
     @pytest.mark.parametrize("value", [15, 30, 45])
-    def test_segment_can_be_created_with_number_being_multiply_of_15(
+    def test_segment_can_be_created_with_number_being_multiply_of_default_slot_duration(
         self, value: int
     ) -> None:
         try:
-            SegmentInMinutes(value)
+            SegmentInMinutes(
+                minutes=value,
+                slot_duration_in_minutes=self.FIFTEEN_MINUTES_SEGMENT_DURATION,
+            )
         except ValueError:
             pytest.fail(
                 "SegmentInMinutes should be created with number being multiply of 15"
@@ -35,7 +44,9 @@ class TestSegments:
         end = datetime(2023, 9, 9, 1)
         time_slot = TimeSlot(start, end)
 
-        segments = split(time_slot, SegmentInMinutes(15))
+        segments = split(
+            time_slot, SegmentInMinutes(15, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
+        )
 
         assert segments == [
             TimeSlot(datetime(2023, 9, 9), datetime(2023, 9, 9, 0, 15)),
@@ -51,7 +62,9 @@ class TestSegments:
         end = datetime(2023, 9, 9, 1)
         time_slot = TimeSlot(start, end)
 
-        segments = split(time_slot, SegmentInMinutes(90))
+        segments = split(
+            time_slot, SegmentInMinutes(90, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
+        )
 
         assert segments == [
             TimeSlot(datetime(2023, 9, 9), datetime(2023, 9, 9, 1, 30)),
@@ -62,7 +75,9 @@ class TestSegments:
         end = datetime(2023, 9, 9, 1)
         time_slot = TimeSlot(start, end)
 
-        segment = normalize_to_segment_boundaries(time_slot, SegmentInMinutes(90))
+        segment = normalize_to_segment_boundaries(
+            time_slot, SegmentInMinutes(90, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
+        )
 
         assert segment == TimeSlot(datetime(2023, 9, 9), datetime(2023, 9, 9, 1, 30))
 
@@ -71,7 +86,9 @@ class TestSegments:
         end = datetime(2023, 9, 9, 0, 59)
         time_slot = TimeSlot(start, end)
 
-        segments = split(time_slot, SegmentInMinutes(60))
+        segments = split(
+            time_slot, SegmentInMinutes(60, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
+        )
 
         assert segments == [
             TimeSlot(datetime(2023, 9, 9), datetime(2023, 9, 9, 1)),
@@ -82,7 +99,9 @@ class TestSegments:
         end = datetime(2023, 9, 9, 0, 59)
         time_slot = TimeSlot(start, end)
 
-        segments = slot_to_segments(time_slot, SegmentInMinutes(30))
+        segments = slot_to_segments(
+            time_slot, SegmentInMinutes(30, self.FIFTEEN_MINUTES_SEGMENT_DURATION)
+        )
 
         assert segments == [
             TimeSlot(datetime(2023, 9, 9), datetime(2023, 9, 9, 0, 30)),

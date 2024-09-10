@@ -17,10 +17,18 @@ class TimeSlot:
 
     @classmethod
     def create_daily_time_slot_at_utc(cls, year: int, month: int, day: int) -> TimeSlot:
+        return cls.create_daily_time_slot_at_utc_duration(
+            year, month, day, timedelta(days=1)
+        )
+
+    @classmethod
+    def create_daily_time_slot_at_utc_duration(
+        cls, year: int, month: int, day: int, duration: timedelta
+    ) -> TimeSlot:
         this_day = date(year, month, day)
         day_start_in_utc = time.min.replace(tzinfo=timezone.utc)
         from_ = datetime.combine(this_day, day_start_in_utc)
-        return TimeSlot(from_, from_ + timedelta(days=1))
+        return TimeSlot(from_, from_ + duration)
 
     @classmethod
     def create_monthly_time_slot_at_utc(cls, year: int, month: int) -> TimeSlot:
