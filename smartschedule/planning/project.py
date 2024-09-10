@@ -1,6 +1,5 @@
+from dataclasses import dataclass
 from datetime import date
-
-from sqlalchemy.orm import Mapped, mapped_column
 
 from smartschedule.planning.chosen_resources import ChosenResources
 from smartschedule.planning.demands import Demands
@@ -11,26 +10,18 @@ from smartschedule.planning.parallelization.parallel_stages_list import (
 from smartschedule.planning.parallelization.stage import Stage
 from smartschedule.planning.project_id import ProjectId
 from smartschedule.planning.schedule.schedule import Schedule
-from smartschedule.shared.sqlalchemy_extensions import AsJSON, EmbeddedUUID, registry
 from smartschedule.shared.timeslot.time_slot import TimeSlot
 
 
-@registry.mapped_as_dataclass(init=False)
+@dataclass
 class Project:
-    __tablename__ = "projects"
-
-    id: Mapped[ProjectId] = mapped_column(EmbeddedUUID[ProjectId], primary_key=True)
-    _version: Mapped[int] = mapped_column(name="version")
-    name: Mapped[str]
-    parallelized_stages: Mapped[ParallelStagesList] = mapped_column(
-        AsJSON[ParallelStagesList]
-    )
-    demands_per_stage: Mapped[DemandsPerStage] = mapped_column(AsJSON[DemandsPerStage])
-    all_demands: Mapped[Demands] = mapped_column(AsJSON[Demands])
-    chosen_resources: Mapped[ChosenResources] = mapped_column(AsJSON[ChosenResources])
-    schedule: Mapped[Schedule] = mapped_column(AsJSON[Schedule])
-
-    __mapper_args__ = {"version_id_col": _version}
+    id: ProjectId
+    name: str
+    parallelized_stages: ParallelStagesList
+    demands_per_stage: DemandsPerStage
+    all_demands: Demands
+    chosen_resources: ChosenResources
+    schedule: Schedule
 
     def __init__(self, name: str, parallelized_stages: ParallelStagesList) -> None:
         self.id = ProjectId.new_one()

@@ -41,19 +41,20 @@ class PlanningFacade:
     def add_new_project(self, name: str, *stages: Stage) -> ProjectId:
         parallelized_stages = self._stage_parallelization.of(set(stages))
         project = Project(name, parallelized_stages)
-        self._project_repository.add(project)
+        self._project_repository.save(project)
         return project.id
 
     def add_new_project_with_parallelized_stages(
         self, name: str, parallelized_stages: ParallelStagesList
     ) -> ProjectId:
         project = Project(name, parallelized_stages)
-        self._project_repository.add(project)
+        self._project_repository.save(project)
         return project.id
 
     def add_demands(self, project_id: ProjectId, demands: Demands) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_demands(demands)
+        self._project_repository.save(project)
         event = CapabilitiesDemanded(project_id, project.all_demands, datetime.now())
         self._events_publisher.publish(event)
 
@@ -62,6 +63,7 @@ class PlanningFacade:
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_demands_per_stage(demands_per_stage)
+        self._project_repository.save(project)
         event = CapabilitiesDemanded(project_id, project.all_demands, datetime.now())
         self._events_publisher.publish(event)
 
@@ -79,14 +81,17 @@ class PlanningFacade:
         project = self._project_repository.get(id=project_id)
         parallelized_stages = self._stage_parallelization.of(set(stages))
         project.parallelized_stages = parallelized_stages
+        self._project_repository.save(project)
 
     def define_start_date(self, project_id: ProjectId, start_date: date) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_start_date(start_date)
+        self._project_repository.save(project)
 
     def define_manual_schedule(self, project_id: ProjectId, schedule: Schedule) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule(schedule)
+        self._project_repository.save(project)
 
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage
@@ -104,6 +109,7 @@ class PlanningFacade:
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_critical_stage(critical_stage, stage_time_slot)
+        self._project_repository.save(project)
         event = CriticalStagePlanned(
             project_id, stage_time_slot, resource_id, datetime.now()
         )
@@ -114,6 +120,7 @@ class PlanningFacade:
     ) -> None:
         project = self._project_repository.get(id=project_id)
         project.add_schedule_by_critical_stage(critical_stage, stage_time_slot)
+        self._project_repository.save(project)
         event = CriticalStagePlanned(project_id, stage_time_slot, None, datetime.now())
         self._events_publisher.publish(event)
 

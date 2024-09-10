@@ -15,6 +15,7 @@ fastapi = {version = "*", extras = ["all"]}
 pydantic = "*"
 lagom = "*"
 psycopg2-binary = "*"
+redis = "*"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"

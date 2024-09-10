@@ -15,5 +15,5 @@ class ProjectRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add(self, model: Project) -> None:
+    def save(self, model: Project) -> None:
         pass

@@ -37,6 +37,7 @@ class PlanChosenResources:
         event = NeededResourcesChosen(
             project_id, resources, time_boundaries, datetime.now()
         )
+        self._project_repository.save(project)
         self._events_publisher.publish(event)
 
     def adjust_stages_to_resource_availability(
@@ -54,6 +55,7 @@ class PlanChosenResources:
             needed_resources_calendars, *stages
         )
         project.add_schedule(schedule)
+        self._project_repository.save(project)
 
     def _create_schedule_adjusting_to_calendars(
         self, needed_resources_calendars: Calendars, *stages: Stage

@@ -24,5 +24,5 @@ class InMemoryProjectRepository(ProjectRepository):
         present_ids = set(self._data.keys()) & set(ids)
         return [self._data[id] for id in present_ids]
 
-    def add(self, model: Project) -> None:
+    def save(self, model: Project) -> None:
         self._data[model.id] = deepcopy(model)

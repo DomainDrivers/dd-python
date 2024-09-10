@@ -3,9 +3,11 @@ from typing import Callable, Iterator
 
 import pytest
 from lagom import Container
+from redis import Redis
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.postgres import PostgresContainer  # type: ignore
+from testcontainers.redis import RedisContainer  # type: ignore
 
 from smartschedule import container as container_module
 from smartschedule.allocation.allocation_facade import AllocationFacade
@@ -22,6 +24,12 @@ from smartschedule.shared.sqlalchemy_extensions import registry
 @pytest.fixture(scope="session")
 def postgres_container() -> Iterator[PostgresContainer]:
     with PostgresContainer("postgres:15") as container:
+        yield container
+
+
+@pytest.fixture(scope="session")
+def redis_container() -> Iterator[RedisContainer]:
+    with RedisContainer("redis:6") as container:
         yield container
 
 
@@ -56,9 +64,19 @@ def session(session_factory: Callable[[], Session]) -> Iterator[Session]:
 
 
 @pytest.fixture()
-def container(session: Session) -> Container:
+def clean_redis(redis_container: RedisContainer) -> Iterator[None]:
+    client = redis_container.get_client()
+    client.flushall()
+    yield
+
+
+@pytest.fixture()
+def container(
+    session: Session, redis_container: RedisContainer, clean_redis: None
+) -> Container:
     container = container_module.build()
     container[Session] = session
+    container[Redis] = redis_container.get_client()
     return container
 
 
